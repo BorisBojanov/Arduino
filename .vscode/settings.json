@@ -1,0 +1,6 @@
+{
+    "cmake.options.statusBarVisibility": "visible",
+    "files.associations": {
+        "*.txt": "cpp"
+    }
+}
