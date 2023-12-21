@@ -360,7 +360,7 @@ void change_mode_ISR() {
 //================
 void setup() {
   Serial.begin(BAUDRATE);
-  Serial.println("Score_box_V3_with_ISR_and_I2C_16bitADCs");
+  Serial.println("Score_Box_V5");
   pinMode(MODE_PIN, INPUT_PULLUP);
   //  Serial.println("Foil Scoring Box");
   //  Serial.println("================");

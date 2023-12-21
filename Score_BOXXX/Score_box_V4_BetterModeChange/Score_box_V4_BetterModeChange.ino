@@ -372,9 +372,9 @@ void BUTTON_Debounce(){
 // Reset all variables
 //======================
 void resetValues() {
-   delay(BUZZERTIME);             // wait before turning off the buzzer
-   //digitalWrite(buzzerPin,  LOW);
-   delay(LIGHTTIME-BUZZERTIME);   // wait before turning off the lights
+  delay(BUZZERTIME);             // wait before turning off the buzzer
+  //digitalWrite(buzzerPin,  LOW);
+  delay(LIGHTTIME-BUZZERTIME);   // wait before turning off the lights
   //Removed this from all Fill color commands and placed here to see if this command is being excicuted
   fill_solid(pixels, NUMPIXELS, CRGB::Black);
   fill_solid(pixels222, NUMPIXELS, CRGB::Black);
@@ -434,13 +434,13 @@ void setup() {
   //attatch the interrupts we need to check
   //attachInterrupt(digitalPinToInterrupt(ads1115_A.readADC_SingleEnded(0)), handleHit, CHANGE);
   //attachInterrupt(digitalPinToInterrupt(ads1115_B.readADC_SingleEnded(0)), handleHit, CHANGE); //SEt a different interrupt PIN
-  //attachInterrupt(digitalPinToInterrupt(MODE_BUTTON_PIN), BUTTON_Debounce, FALLING);
+  attachInterrupt(digitalPinToInterrupt(MODE_BUTTON_PIN), BUTTON_Debounce, FALLING);
   resetValues();
 }
 
 void loop() {
-  int16_t adc0, adc1, adc2, adc3;
-  int16_t adc4, adc5, adc6, adc7;
+  int16_t weaponA, lameA, groundA, adc3;
+  int16_t weaponB, lameB, groundB, adc7;
   weaponA = ads1115_A.readADC_SingleEnded(0);    // Read from channel 0 of the first ADS1115
   lameA = ads1115_A.readADC_SingleEnded(1);    // Read from channel 1 of the first ADS1115
   groundA = ads1115_A.readADC_SingleEnded(2);    // Read from channel 2 of the first ADS1115
