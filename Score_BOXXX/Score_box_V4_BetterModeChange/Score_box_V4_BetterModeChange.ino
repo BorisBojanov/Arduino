@@ -91,9 +91,9 @@ void handleFoilHit();
 void handleEpeeHit();
 void handleSabreHit();
 //==========================
-// Mode Changer
+// WeaponMode Changer
 //==========================
-struct Mode {
+struct WeaponMode {
   int lockoutTime;
   int depressTime;
   void (*handleHit)();
@@ -110,10 +110,10 @@ struct Mode {
 // the lockout time between hits for SABRE is 120ms +/-10ms
 // the minimum amount of time the tip needs to be depressed for SABRE 0.1ms -> 1ms
 // These values are stored as micro seconds for more accuracy
-Mode foilMode = {300000, 14000, handleFoilHit};
-Mode epeeMode = {45000, 2000, handleEpeeHit};
-Mode sabreMode = {120000, 1000, handleSabreHit};
-Mode* currentMode = &foilMode; // Default Mode
+WeaponMode foilMode = {300000, 14000, handleFoilHit};
+WeaponMode epeeMode = {45000, 2000, handleEpeeHit};
+WeaponMode sabreMode = {120000, 1000, handleSabreHit};
+WeaponMode* currentMode = &foilMode; // Default Mode
 
 
 void handleFoilHit() {

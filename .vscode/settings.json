@@ -2,5 +2,6 @@
     "cmake.options.statusBarVisibility": "visible",
     "files.associations": {
         "*.txt": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "C:/Users/boris/OneDrive/Documents/Arduino/libraries/FastLED"
 }

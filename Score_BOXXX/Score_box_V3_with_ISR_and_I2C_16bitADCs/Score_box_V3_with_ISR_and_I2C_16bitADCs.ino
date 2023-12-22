@@ -24,7 +24,7 @@ Speed of baud rate
    #define BUZZERTIME  1000  // length of time the buzzer is kept on after a hit (ms)
    #define LIGHTTIME   3000  // length of time the lights are kept on after a hit (ms)
    #define BAUDRATE   115200  // baudrate of the serial debug interface
-   int delayval = 100; // timing delay in milliseconds
+   #define LEDTYPE    WS2812B  // type of led strip being used
 
 //=======================
 // ADC Defines and info
@@ -317,7 +317,7 @@ void setup() {
 
   //attatch the interrupts we need to check
   //   attachInterrupt(digitalPinToInterrupt(ads1115_default.readADC_SingleEnded(0)), weaponA_ISR, CHANGE);
-  //   attachInterrupt(digitalPinToInterrupt(ads1115_addr.readADC_SingleEnded(0)), weaponB_ISR, CHANGE); //SEt a different interrupt PIN
+  attachInterrupt(digitalPinToInterrupt(ads1115_addr.readADC_SingleEnded(0)), testLights, CHANGE); //SEt a different interrupt PIN
 
   // set the light pins to outputs
   //  pinMode(offTargetA, OUTPUT);

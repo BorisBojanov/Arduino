@@ -13,7 +13,7 @@ typedef enum {
 } WeaponMode;
 WeaponMode currentMode;
 //Global Variables
-const BAUDRATE = 115200;
+ 
 
 //if variables need to be used by ISR mkae them Volatile
 //if  variables change often and need to be loaded quickly make them Volatile
@@ -62,7 +62,7 @@ void handleMode() {
  }
 }
 
-void resetValues(){
+resetValues(){
     lockedOut    = false;
     depressAtime = 0;
     depressedA   = false;
@@ -77,8 +77,7 @@ void resetValues(){
 }
 //main functions
 void setup() {
-  Serial.begin(BAUDRATE);
-  Serial.println("Score_Box_V5_with_ALRT_PIN");
+
  // Set an initial mode, for example, FOIL
  currentMode = FOIL;
 }
