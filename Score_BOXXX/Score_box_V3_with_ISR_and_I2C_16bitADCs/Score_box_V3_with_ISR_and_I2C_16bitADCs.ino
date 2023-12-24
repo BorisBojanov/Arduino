@@ -342,7 +342,7 @@ void setup() {
 // Main Loop
 //====================
 void loop() {
-  
+
   // read analog pins
   int16_t adc0, adc1, adc2, adc3;
   int16_t adc4, adc5, adc6, adc7;
