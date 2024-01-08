@@ -89,6 +89,9 @@ const long depress [] = { 14000,   2000,   1000};  // the minimum amount of time
 void ALRT_OnTarget_ISR() {ALRT_OnTarget = true;}
 void ALRT_OffTarget_ISR() {ALRT_OffTarget = true;}
 void ALRT_Short_ISR() {ALRT_Short = true;}
+
+//When mode button is pressed this function is excicuted.
+//No need to worry about speed of this ISR because the User will need to wait for LED confirmation of change
 void modeChangeISR() {
   unsigned long interruptTime = millis();
   if (interruptTime - lastInterruptTime > debounceTime) {
@@ -99,18 +102,18 @@ void modeChangeISR() {
 }
 // MODE CHANGER
 void ChangeTheMODE(){
-if(digitalRead(modeChange_PIN) == LOW) {
-  if (MODE_INT == SABRE_MODE) {
-    MODE_INT = FOIL_MODE;
-  } else {
-    MODE_INT += 1;
+  if(digitalRead(modeChange_PIN) == LOW) {
+    if (MODE_INT == SABRE_MODE) {
+      MODE_INT = FOIL_MODE;
+    } else {
+      MODE_INT += 1;
+    }
   }
-}
-//set_mode_leds();
-Serial.print("Mode changed to:");
-Serial.println(MODE_INT);
-lastInterruptTime = 0;
-modeChange = false;
+  //set_mode_leds();
+  Serial.print("Mode changed to:");
+  Serial.println(MODE_INT);
+  lastInterruptTime = 0;
+  modeChange = false;
 }
 //logic for the three modes
 void foil(){
@@ -125,7 +128,7 @@ void foil(){
   lameA = ads_OffTarget.readADC_SingleEnded(1);
   weaponB = ads_OffTarget.readADC_SingleEnded(2);
   lameB = ads_OffTarget.readADC_SingleEnded(3);
-  long now = micros();
+  long now = micros();//The long now = micros() variable is set earlier in the main loop.
   //_____Check for lockout___
   if (((hitOnTargA || hitOffTargA) && (depressAtime + foilMode[Lockout_Time_INT] < now)) 
                                       ||
@@ -346,111 +349,110 @@ void setup() {
 }
 
 void loop() {
-//This loop should call one function that is a pointer to the mode that has been selected
-//This function should be called in a switch statement?
-//A function that checks the if any interrupts have set a flag to Ture
-int16_t weaponA, lameA, groundA, weaponB, lameB, groundB;
-weaponA = ads_OnTarget.readADC_SingleEnded(0);
-lameA = ads_OnTarget.readADC_SingleEnded(1);
-weaponB = ads_OnTarget.readADC_SingleEnded(2);
-lameB = ads_OnTarget.readADC_SingleEnded(3);
+  //This loop should call one function that is a pointer to the mode that has been selected
+  //This function should be called in a switch statement?
+  //A function that checks the if any interrupts have set a flag to Ture
+  int16_t weaponA, lameA, groundA, weaponB, lameB, groundB;
+  weaponA = ads_OnTarget.readADC_SingleEnded(0);
+  lameA = ads_OnTarget.readADC_SingleEnded(1);
+  weaponB = ads_OnTarget.readADC_SingleEnded(2);
+  lameB = ads_OnTarget.readADC_SingleEnded(3);
 
-weaponA = ads_OffTarget.readADC_SingleEnded(0);
-lameA = ads_OffTarget.readADC_SingleEnded(1);
-weaponB = ads_OffTarget.readADC_SingleEnded(2);
-lameB = ads_OffTarget.readADC_SingleEnded(3);
+  weaponA = ads_OffTarget.readADC_SingleEnded(0);
+  lameA = ads_OffTarget.readADC_SingleEnded(1);
+  weaponB = ads_OffTarget.readADC_SingleEnded(2);
+  lameB = ads_OffTarget.readADC_SingleEnded(3);
 
 
-//==========TESTING============
-Serial.print("ads_OnTarget (0x48) Channel 0 - weaponA: "); Serial.println(weaponA);
-Serial.print("ads_OnTarget (0x48) Channel 1 - weaponB: "); Serial.println(weaponB);
-Serial.print("ads_OnTarget (0x48) Channel 2 - lameA: "); Serial.println(lameA);
-Serial.print("ads_OffTarget (0x49) Channel 3 - lameB: "); Serial.println(lameB);
-//=============================
-Serial.print("ads_OffTarget (0x49) Channel 4 - weaponA: "); Serial.println(weaponA);
-Serial.print("ads_OffTarget (0x49) Channel 5 - weaponB: "); Serial.println(weaponB);
-Serial.print("ads_OffTarget (0x49) Channel 6 - lameA: "); Serial.println(lameA);
-Serial.print("ads_OffTarget (0x49) Channel 7 - lameB: "); Serial.println(lameB);
-//==========TESTING============
+  //==========TESTING============
+  Serial.print("ads_OnTarget (0x48) Channel 0 - weaponA: "); Serial.println(weaponA);
+  Serial.print("ads_OnTarget (0x48) Channel 1 - weaponB: "); Serial.println(weaponB);
+  Serial.print("ads_OnTarget (0x48) Channel 2 - lameA: "); Serial.println(lameA);
+  Serial.print("ads_OffTarget (0x49) Channel 3 - lameB: "); Serial.println(lameB);
+  //=============================
+  Serial.print("ads_OffTarget (0x49) Channel 4 - weaponA: "); Serial.println(weaponA);
+  Serial.print("ads_OffTarget (0x49) Channel 5 - weaponB: "); Serial.println(weaponB);
+  Serial.print("ads_OffTarget (0x49) Channel 6 - lameA: "); Serial.println(lameA);
+  Serial.print("ads_OffTarget (0x49) Channel 7 - lameB: "); Serial.println(lameB);
+  //==========TESTING============
 
-// Check if any interrupts have set a flag to True
-if (ALRT_OnTarget){
-  long now = micros();
-  //This bool is triggered by the ALRT_OnTarget_ISR with a window ALRT of 17000 - 18000
-  //A function that will do a thing
+  // Check if any interrupts have set a flag to True
+  if (ALRT_OnTarget){
+    long now = micros();
+    //This bool is triggered by the ALRT_OnTarget_ISR with a window ALRT of 17000 - 18000
+    //A function that will do a thing
 
-  if (!lockedOut) {
-   if (((hitOnTargA || hitOffTargA) && (depressAtime + lockout[MODE_INT] < now)) 
-                                    || 
-       ((hitOnTargB || hitOffTargB) && (depressBtime + lockout[MODE_INT] < now))) {
-      lockedOut = true;
-   } else {
+    if (!lockedOut) {
+    if (((hitOnTargA || hitOffTargA) && (depressAtime + lockout[MODE_INT] < now)) 
+                                      || 
+        ((hitOnTargB || hitOffTargB) && (depressBtime + lockout[MODE_INT] < now))) {
+        lockedOut = true;
+    } else {
+      handleMode();
+    }    
+    }
+  }
+  if (ALRT_OffTarget) {
+    long now = micros();
+    //This bool is triggered by the ALRT_OffTarget_ISR with a window ALRT of 18000 - 32000 
+    //A function that will do a thing
+    if (!lockedOut) {
+    if (((hitOnTargA || hitOffTargA) && (depressAtime + lockout[MODE_INT] < now)) 
+                                      || 
+        ((hitOnTargB || hitOffTargB) && (depressBtime + lockout[MODE_INT] < now))) {
+        lockedOut = true;
+    } else {
+      handleMode();
+    }    
+    }
+  }
+  if (ALRT_Short) {
+    //This bool is triggered by the ALRT_Short_ISR with a window ALRT of -10 - 10
+    //A function that will do a thing
     handleMode();
-   }    
   }
-}
-if (ALRT_OffTarget) {
-  long now = micros();
-  //This bool is triggered by the ALRT_OffTarget_ISR with a window ALRT of 18000 - 32000 
-  //A function that will do a thing
-  if (!lockedOut) {
-   if (((hitOnTargA || hitOffTargA) && (depressAtime + lockout[MODE_INT] < now)) 
-                                    || 
-       ((hitOnTargB || hitOffTargB) && (depressBtime + lockout[MODE_INT] < now))) {
-      lockedOut = true;
-   } else {
+  if (modeChange) {
+    //A function that will change the mode
+    ChangeTheMODE();
     handleMode();
-   }    
-  }
-}
-if (ALRT_Short) {
-  //This bool is triggered by the ALRT_Short_ISR with a window ALRT of -10 - 10
-  //A function that will do a thing
-  handleMode();
-}
-if (modeChange) {
-  //A function that will change the mode
-  ChangeTheMODE();
-  handleMode();
 
-}
+  }
 
-
-if (hitOnTargA) {
-  // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-  fill_solid(pixels , NUMPIXELS, CRGB::Green); // Moderately bright GREEN color.
-  FastLED.show(); // This sends the updated pixel color to the hardware.
-  //delay(delayval); // Delay for a period of time (in milliseconds).
-  } 
-if (hitOffTargA) {
-  // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-  fill_solid(pixels, NUMPIXELS, CRGB::Yellow); // Yellow color.
-  FastLED.show(); // This sends the updated pixel color to the hardware.
-  //delay(delayval); // Delay for a period of time (in milliseconds).
-  }  
-if (hitOnTargB) {
-  // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-  fill_solid(pixels2, NUMPIXELS, CRGB::Red); // Moderately bright RED color.
-  FastLED.show(); // This sends the updated pixel color to the hardware.
-  //delay(delayval); // Delay for a period of time (in milliseconds).
-  }
-if (hitOffTargB){
-  // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-  fill_solid(pixels2, NUMPIXELS, CRGB::Blue); // Bright Blue color.
-  FastLED.show(); // This sends the updated pixel color to the hardware.
-  //delay(delayval); // Delay for a period of time (in milliseconds).
-  }
-//==========TESTING============
-String serData = String("hitOnTargA  : ") + hitOnTargA  + "\n"
-                      + "hitOffTargA : "  + hitOffTargA + "\n"
-                      + "hitOffTargB : "  + hitOffTargB + "\n"
-                      + "hitOnTargB  : "  + hitOnTargB  + "\n"
-                      + "Locked Out  : "  + lockedOut   + "\n";
-Serial.println(serData);
-//==========TESTING============
-if (lockedOut){
-  resetValues();
-  }
-delay(1);
+  if (hitOnTargA) {
+    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
+    fill_solid(pixels , NUMPIXELS, CRGB::Green); // Moderately bright GREEN color.
+    FastLED.show(); // This sends the updated pixel color to the hardware.
+    //Delay for a period of time (in milliseconds). Will be done In the Reset Function
+    } 
+  if (hitOffTargA) {
+    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
+    fill_solid(pixels, NUMPIXELS, CRGB::Yellow); // Yellow color.
+    FastLED.show(); // This sends the updated pixel color to the hardware.
+    //Delay for a period of time (in milliseconds). Will be done In the Reset Function
+    }  
+  if (hitOnTargB) {
+    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
+    fill_solid(pixels2, NUMPIXELS, CRGB::Red); // Moderately bright RED color.
+    FastLED.show(); // This sends the updated pixel color to the hardware.
+    //Delay for a period of time (in milliseconds). Will be done In the Reset Function
+    }
+  if (hitOffTargB){
+    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
+    fill_solid(pixels2, NUMPIXELS, CRGB::Blue); // Bright Blue color.
+    FastLED.show(); // This sends the updated pixel color to the hardware.
+    //Delay for a period of time (in milliseconds). Will be done In the Reset Function
+    }
+  //==========TESTING============
+  String serData = String("hitOnTargA  : ") + hitOnTargA  + "\n"
+                        + "hitOffTargA : "  + hitOffTargA + "\n"
+                        + "hitOffTargB : "  + hitOffTargB + "\n"
+                        + "hitOnTargB  : "  + hitOnTargB  + "\n"
+                        + "Locked Out  : "  + lockedOut   + "\n";
+  Serial.println(serData);
+  //==========TESTING============
+  if (lockedOut){
+    resetValues();
+    }
+  delay(1);
 }
 
