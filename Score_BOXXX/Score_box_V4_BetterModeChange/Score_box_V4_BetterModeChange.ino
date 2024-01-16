@@ -137,7 +137,12 @@ WeaponMode* currentMode = &foilMode; // Default Mode
 
 void handleFoilHit() {
   // Serial.println("Inside: Handle Foil Function");
-
+  volatile boolean depressedA  = false;
+  volatile boolean depressedB  = false;
+  volatile boolean hitOnTargetA  = false;
+  volatile boolean hitOffTargetA = false;
+  volatile boolean hitOnTargetB  = false;
+  volatile boolean hitOffTargetB = false;
   // read analog pins
     int16_t weaponA, lameA, groundA, adc3;
     int16_t weaponB, lameB, groundB, adc7;
