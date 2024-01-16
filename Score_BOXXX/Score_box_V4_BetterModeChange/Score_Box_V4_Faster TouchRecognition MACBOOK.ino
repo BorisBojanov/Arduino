@@ -84,8 +84,8 @@
   int16_t Epee_Ground_OnTarget_Threshold = 13100;
 
   int16_t Epee_weapon_OffTarget_Threshold = 26000;
-  int16_t Epee_lame_OffTarget_Threshold = 10000000;
-  int16_t Epee_Ground_OffTarget_Threshold = 10696969696;
+  int16_t Epee_lame_OffTarget_Threshold = 0;
+  int16_t Epee_Ground_OffTarget_Threshold = 0;
 
   //Sabre Values
   int16_t Sabre_weapon_OffTarget_Threshold = 26000;
@@ -104,12 +104,14 @@
 //==========================
 // states
 //==========================
-volatile boolean depressedA  = false;
-volatile boolean depressedB  = false;
-volatile boolean hitOnTargetA  = false;
-volatile boolean hitOffTargetA = false;
-volatile boolean hitOnTargetB  = false;
-volatile boolean hitOffTargetB = false;
+int depressed_ON_A_SIDE  = 1;
+int depressed_ON_B_SIDE  = 2;
+bool depressedA   = false;
+bool depressedB   = false;
+bool hitOnTargetA  = false;
+bool hitOffTargetA = false;
+bool hitOnTargetB  = false;
+bool hitOffTargetB = false;
 //==========================
 //Forward Declare The functions used by struct WeaponMode
 //==========================
@@ -117,17 +119,17 @@ void handleFoilHit();
 void handleEpeeHit();
 void handleSabreHit();
 //==========================
-// WeaponMode Changer
+// WeaponMode Changer in micro seconds
 //==========================
-volatile int32_t Foil_lockout = 300000;
-volatile int32_t Epee_lockout = 45000;
-volatile int32_t Sabre_lockout = 120000;
+volatile int32_t Foil_lockout = 300000; //300 millis = 300000 micros
+volatile int32_t Epee_lockout = 40000; //40 millis = 40000 micros
+volatile int32_t Sabre_lockout = 170000; //170 milliseconds +/- 10ms = 170000 micros
 
-volatile int32_t Foil_Drepess = 14000;
-volatile int32_t Epee_Depress = 0;
-volatile int32_t Sabre_Depress = 10;
+volatile int32_t Foil_Drepess = 14000; //13-15 millis, 14 micros
+volatile int32_t Epee_Depress = 2000; 
+volatile int32_t Sabre_Depress = 1000;
 
-volatile struct WeaponMode {
+struct WeaponMode {
   long lockoutTime;
   long depressTime;
   void (*handleHit)();
@@ -158,8 +160,8 @@ WeaponMode epeeMode = {Epee_lockout, Epee_Depress, handleEpeeHit,
                        Epee_Weapon_OnTarget_Threshold, Epee_Lame_OnTarget_Threshold, Epee_Ground_OnTarget_Threshold, 
                        Epee_weapon_OffTarget_Threshold, Epee_lame_OffTarget_Threshold, Epee_Ground_OffTarget_Threshold};
 WeaponMode sabreMode = {Sabre_lockout, Sabre_Depress, handleSabreHit,
-                       weapon_OnTarget_Threshold, lame_OnTarget_Threshold, ground_OnTarget_Threshold, 
-                       weapon_OffTarget_Threshold, lame_OffTarget_Threshold, ground_OffTarget_Threshold};
+                       Sabre_weapon_OnTarget_Threshold, Sabre_lame_OnTarget_Threshold, Sabre_ground_OnTarget_Threshold, 
+                       Sabre_weapon_OffTarget_Threshold, Sabre_lame_OffTarget_Threshold, Sabre_ground_OffTarget_Threshold};
 WeaponMode* currentMode = &foilMode; // Default Mode
 
 //Returns lockedOut = true if locked out
@@ -183,39 +185,63 @@ if(currentMode == &foilMode){
   }
 }
 
+/*
+//takes in the depressA/B Time and the depressedA/B boolean
+//Checks if the states need to be changed based on the amount of Microsecond that have passsed
+//Compared to the currentMode values
+*/
+void CheckDepression(bool& depressed,long& depressedTime, int& LeftORrigt, WeaponMode* currentMode){
 
-void handleHitWeapon(int16_t weaponA, int16_t lameA, int16_t weaponB, int16_t lameB, int32_t depressTime, 
-  boolean& hitOnTarget, boolean& hitOffTarget, long& depressTimeVar, 
-  WeaponMode* currentMode) {
+}
+//this function hadles both A and B sides
+/*
+Give it a Weapon Value and lame Value and returns:  Ture if ON Target
+                                                    False if OFF Target
+Pass in currentMode to be able to change the timings for the mode you are in.
+When passing in Weapon and Lame Values make sure to pass Opposet values
+for example if you want to check if the weaponA is on target is Ture
+you must call handleHitWeapon(weaponA, lameB, currentMode);
+*/
+void handleHitWeapon(int32_t weaponA_B, int32_t lameB_A, int& LeftORrigt, bool& depressed, long& depressedTime, WeaponMode* currentMode) {
   int16_t Allowable_Deviation = 500;
+  unsigned long LastDrepress;
   unsigned long now = micros();
-  if (!hitOnTargetA && !hitOffTargetA) {
-    // Off target for WeaponA`
-    if ((weaponA > (currentMode -> weapon_OffTarget_Threshold) && lameB < (currentMode -> lame_OffTarget_Threshold))
-                                              ||
-        (weaponB > weapon_OffTarget_Threshold && lameA < lame_OffTarget_Threshold)) {
-      if (!depressedA) {
-        unsigned long depressTimeVar = micros();
+  if ((!hitOnTargetA && !hitOffTargetA)&&(currentMode != &epeeMode)) {
+    // Off target for Weapon A or B
+    if ((weaponA_B > (currentMode -> weapon_OffTarget_Threshold) && lameB_A < (currentMode -> lame_OffTarget_Threshold))) {
+      if (!depressed && LeftORrigt == 1) { //need to be able to check which side is depressed
+        unsigned long LastDrepress = micros();
         depressedA = true;
-      } else if (depressTimeVar + currentMode->depressTime <= now) {
+      } else if (LastDrepress + (currentMode->depressTime) <= now) {
         hitOffTargetA = true;
       }
+      if (!depressed && LeftORrigt == 2){
+        unsigned long LastDrepress = micros();
+        depressedB = true;
+      } else if (LastDrepress + (currentMode->depressTime) <= now) {
+        hitOffTargetB = true;
+      }
     } else {
-      // On target for WeaponA
-      if ((weaponA > (currentMode -> weapon_OnTarget_Threshold - Allowable_Deviation) 
-                                        && 
-          weaponA < (currentMode -> weapon_OnTarget_Threshold + Allowable_Deviation)) 
-                                                                        &&
-                (lameB > (lame_OnTarget_Threshold - Allowable_Deviation) && lameB < (lame_OnTarget_Threshold + Allowable_Deviation))) {
-        if (!depressedA) {
+      // On target for Weapon A or B
+      if ((weaponA > (currentMode -> weapon_OnTarget_Threshold - Allowable_Deviation) && weaponA < (currentMode -> weapon_OnTarget_Threshold + Allowable_Deviation)) 
+                                                                                      &&
+            (lameB > ((currentMode -> lame_OnTarget_Threshold) - Allowable_Deviation) && lameB < ((currentMode -> lame_OnTarget_Threshold) + Allowable_Deviation))) {
+        if (!depressed && LeftORrigt == 1) {
           unsigned long depressTimeVar = micros();
           depressedA = true;
-        } else if (depressTimeVar + currentMode->depressTime <= now) {
+        } else if (LastDrepress + (currentMode->depressTime) <= now) {
           hitOnTargetA = true;
         }
+        if(!depressed && LeftORrigt == 2){
+          unsigned long depressTimeVar = micros();
+          depressedB = true;
+        } else if (LastDrepress + (currentMode->depressTime) <= now) {
+          hitOnTargetB = true;
+        }
       } else {
-        depressTimeVar = 0;
+        LastDrepress = 0;
         depressedA = false;
+        depressedB = false;
       }
     }
   }
@@ -223,24 +249,23 @@ void handleHitWeapon(int16_t weaponA, int16_t lameA, int16_t weaponB, int16_t la
 
 void handleFoilHit() {
   // Serial.println("Inside: Handle Foil Function");
-  volatile bool hitOnTargetA;
-  volatile bool hitOffTargetA;
-  volatile bool hitOnTargetB;
-  volatile bool hitOffTargetB;
-  volatile unsigned long depressAtime;
-  volatile unsigned long depressBtime;
-  volatile bool lockedOut;
-
+  bool hitOnTargetA;
+  bool hitOffTargetA;
+  bool hitOnTargetB;
+  bool hitOffTargetB;
+  long depressAtime;
+  long depressBtime;
+  bool lockedOut;
   // read analog pins
-  int16_t weaponA, lameA, groundA, adc3;
-  int16_t weaponB, lameB, groundB, adc7;
+  volatile int32_t weaponA, lameA, groundA, adc3;
+  volatile int32_t weaponB, lameB, groundB, adc7;
   weaponA = ads1115_A.readADC_SingleEnded(0);    // Read from channel 0 of the first ADS1115
   lameA = ads1115_A.readADC_SingleEnded(1);    // Read from channel 1 of the first ADS1115
-  groundA = ads1115_A.readADC_SingleEnded(2);    // Read from channel 2 of the first ADS1115
+  //groundA = ads1115_A.readADC_SingleEnded(2);    // Read from channel 2 of the first ADS1115
 
   weaponB = ads1115_B.readADC_SingleEnded(0);   // Read from channel 0 of the second ADS1115
   lameB = ads1115_B.readADC_SingleEnded(1);   // Read from channel 1 of the second ADS1115
-  groundB = ads1115_B.readADC_SingleEnded(2);   // Read from channel 2 of the second ADS1115
+  //groundB = ads1115_B.readADC_SingleEnded(2);   // Read from channel 2 of the second ADS1115
   // Serial.print("Default ADS1115 (0x48) weaponA 0: "); Serial.println(weaponA);
   // Serial.print("Default ADS1115 (0x48) lameA 1: "); Serial.println(lameA);
   // Serial.print("Default ADS1115 (0x48) groundA 2: "); Serial.println(groundA);
@@ -249,40 +274,10 @@ void handleFoilHit() {
   // Serial.print("ADDR ADS1115 (0x49) lameB 5: "); Serial.println(lameB);
   // Serial.print("ADDR ADS1115 (0x49) groundB 6: "); Serial.println(groundB);
 
-  if(CheckForLockout(hitOnTargetA, hitOffTargetA, hitOnTargetB, hitOffTargetB, depressAtime, depressBtime, currentMode)) {
-    handleHitWeapon();
-    return; //returns to the main loop if locked out
-  }
-
-  
-  unsigned long now = micros(); // Arduino uses millis() to get the number of milliseconds since the board started running.
-                              //It's similar to the Python monotonic_ns() function but gives time in ms not ns.
-  // ___Weapon B___
-  if (!hitOnTargetB && !hitOffTargetB) {
-      // Off target
-      if (weaponB > weapon_OffTarget_Threshold && lameA < lame_OffTarget_Threshold) {
-          if (!depressedB) {
-              long depressBtime = micros();
-              depressedB = true;
-          } else if (depressBtime + foilMode.depressTime <= now) {
-              hitOffTargetB = true;
-          }
-      } else {
-          // On target
-          if (weaponB > (weapon_OnTarget_Threshold - Allowable_Deviation) && weaponB < (weapon_OnTarget_Threshold + Allowable_Deviation)
-                                                                          && 
-                  lameA > (lame_OnTarget_Threshold - Allowable_Deviation) && lameA < (lame_OnTarget_Threshold + Allowable_Deviation)) {
-              if (!depressedB) {
-                  long depressBtime = micros();
-                  depressedB = true;
-              } else if (depressBtime + foilMode.depressTime <= now) {
-                  hitOnTargetB = true;
-              }
-          } else {
-              depressBtime = 0;
-              depressedB = false;
-          }
-      }
+  if(!CheckForLockout(hitOnTargetA, hitOffTargetA, hitOnTargetB, hitOffTargetB, depressAtime, depressBtime, currentMode)) {
+    handleHitWeapon(weaponA, lameB, depressed_ON_A_SIDE, depressedA, depressAtime, currentMode);
+    handleHitWeapon(weaponB, lameA, depressed_ON_B_SIDE, depressedB, depressBtime, currentMode);
+    return; //returns to the handleHit; if locked out
   }
 }
 
@@ -452,8 +447,13 @@ void handleSabreHit() {
   }
 }
 
-void handleHit() {
+/*
+We pass in two boolean values from the main loop where this is called
+*/
+void handleHit(boolean& hitOnTarget, boolean& hitOffTarget) {
+  if (!hitOnTarget && !hitOffTarget){
     currentMode->handleHit(); // will point to a Mode instance in struct Mode
+}
 }
 
 void modeChange() { 
@@ -583,27 +583,20 @@ void setup() {
 }
 
 void loop() {
-  volatile bool hitOnTargetA;
-  volatile bool hitOffTargetA;
-  volatile bool hitOnTargetB;
-  volatile bool hitOffTargetB;
-  volatile unsigned long depressAtime;
-  volatile unsigned long depressBtime;
-  volatile bool lockedOut;
   //main code here, to run repeatedly:
   if(BUTTON_Debounce(MODE_BUTTON_PIN)){
     modeChange();
   }
 
-if(!lockedOut) {
-handleHit(); // will point to a Mode instance in struct Mode Foil,Epee, or Sabre
-}
- 
-CheckForLockout(hitOnTargetA, hitOffTargetA, hitOnTargetB, hitOffTargetB, depressAtime, depressBtime, currentMode); // This is either true or False
+  if(!lockedOut) {
+    handleHit(); // will point to a Mode instance in struct Mode Foil,Epee, or Sabre
+  }
 
-//maybe want to make a reset function for each mode
-if ( lockedOut|| (currentMode == &sabreMode && (hitOffTargetB || hitOffTargetA))){
-  resetValues();
+  CheckForLockout(hitOnTargetA, hitOffTargetA, hitOnTargetB, hitOffTargetB, depressAtime, depressBtime, currentMode); // This is either true or False
+
+  //maybe want to make a reset function for each mode
+  if ( lockedOut|| (currentMode == &sabreMode && (hitOffTargetB || hitOffTargetA))){
+    resetValues();
   }
 
   if (hitOnTargetA) {
