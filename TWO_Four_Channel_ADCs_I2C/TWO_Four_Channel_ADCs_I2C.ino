@@ -59,8 +59,8 @@ void loop(void) {
   // adc6 = ads1115_addr.readADC_SingleEnded(2);
 
   Serial.print("Default ADS1115 (0x48) Channel 0: "); Serial.println(adc0);
-  Serial.print("Default ADS1115 (0x48) Channel 1: "); Serial.println(adc1);
-  Serial.print("Default ADS1115 (0x48) Channel 2: "); Serial.println(adc2);
+  // Serial.print("Default ADS1115 (0x48) Channel 1: "); Serial.println(adc1);
+  // Serial.print("Default ADS1115 (0x48) Channel 2: "); Serial.println(adc2);
 
   // Serial.print("ADDR ADS1115 (0x49) Channel 4: "); Serial.println(adc4);
   // Serial.print("ADDR ADS1115 (0x49) Channel 5: "); Serial.println(adc5);
