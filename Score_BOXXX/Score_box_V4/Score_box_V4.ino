@@ -585,9 +585,6 @@ void loop() {
     int16_t adc0, adc1, adc2, adc3;
     int16_t adc4, adc5, adc6, adc7;
 
-    float volts0, volts1, volts2, volts3;
-    float volts4, volts5, volts6, volts7;
-
     weaponA = ads1115_default.readADC_SingleEnded(0);    // Read from channel 0 of the first ADS1115
     lameA = ads1115_default.readADC_SingleEnded(1);    // Read from channel 1 of the first ADS1115
     groundA = ads1115_default.readADC_SingleEnded(2);    // Read from channel 2 of the first ADS1115
@@ -636,8 +633,6 @@ void loop() {
     int16_t adc0, adc1, adc2, adc3;
     int16_t adc4, adc5, adc6, adc7;
 
-    float volts0, volts1, volts2, volts3;
-    float volts4, volts5, volts6, volts7;
 
     weaponA = ads1115_default.readADC_SingleEnded(0);    // Read from channel 0 of the first ADS1115
     lameA = ads1115_default.readADC_SingleEnded(1);    // Read from channel 1 of the first ADS1115

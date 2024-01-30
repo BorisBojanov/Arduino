@@ -253,9 +253,7 @@
                 "c:\\users\\boris\\appdata\\local\\arduino15\\packages\\esp32\\tools\\xtensa-esp32-elf-gcc\\esp-2021r2-patch5-8.4.0\\lib\\gcc\\xtensa-esp32-elf\\8.4.0\\include",
                 "c:\\users\\boris\\appdata\\local\\arduino15\\packages\\esp32\\tools\\xtensa-esp32-elf-gcc\\esp-2021r2-patch5-8.4.0\\lib\\gcc\\xtensa-esp32-elf\\8.4.0\\include-fixed",
                 "c:\\users\\boris\\appdata\\local\\arduino15\\packages\\esp32\\tools\\xtensa-esp32-elf-gcc\\esp-2021r2-patch5-8.4.0\\xtensa-esp32-elf\\sys-include",
-                "c:\\users\\boris\\appdata\\local\\arduino15\\packages\\esp32\\tools\\xtensa-esp32-elf-gcc\\esp-2021r2-patch5-8.4.0\\xtensa-esp32-elf\\include",
-                "C:\\Users\\boris\\OneDrive\\Documents\\Arduino\\libraries/**",
-                "${libraries}"
+                "c:\\users\\boris\\appdata\\local\\arduino15\\packages\\esp32\\tools\\xtensa-esp32-elf-gcc\\esp-2021r2-patch5-8.4.0\\xtensa-esp32-elf\\include"
             ],
             "forcedInclude": [
                 "C:\\Users\\boris\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\2.0.14\\cores\\esp32\\Arduino.h"

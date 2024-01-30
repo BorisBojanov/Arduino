@@ -1,7 +1,24 @@
 {
     "cmake.options.statusBarVisibility": "visible",
     "files.associations": {
-        "*.txt": "cpp"
+        "*.txt": "cpp",
+        "array": "cpp",
+        "chrono": "cpp",
+        "functional": "cpp",
+        "istream": "cpp",
+        "ostream": "cpp",
+        "ratio": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp",
+        "variant": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "regex": "cpp"
     },
     "cmake.sourceDirectory": "C:/Users/boris/OneDrive/Documents/Arduino/libraries/FastLED"
 }

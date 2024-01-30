@@ -245,17 +245,26 @@ void handleHitWeapon(int32_t weaponA_B, int32_t lameB_A, int& LeftORrigt, bool& 
       }
     }
   }
+  Serial.print(currentMode);
+  String serData = String("hitOnTargetA  : ") + hitOnTargetA  + "\n"
+                      + "hitOffTargetA : "  + hitOffTargetA + "\n"
+                      + "hitOffTargetB : "  + hitOffTargetB + "\n"
+                      + "hitOnTargetB  : "  + hitOnTargetB  + "\n"
+                      + "Locked Out  : "  + lockedOut   + "\n";
+  Serial.println(serData);
 }
 
 void handleFoilHit() {
   // Serial.println("Inside: Handle Foil Function");
-  bool hitOnTargetA;
-  bool hitOffTargetA;
-  bool hitOnTargetB;
-  bool hitOffTargetB;
-  long depressAtime;
-  long depressBtime;
-  bool lockedOut;
+  int depressed_ON_A_SIDE = depressed_ON_A_SIDE;
+  int depressed_ON_B_SIDE = depressed_ON_B_SIDE;
+  bool depressedA    = depressedA;
+  bool depressedB    = depressedB;
+  bool hitOnTargetA  = hitOnTargetA;
+  bool hitOffTargetA = hitOffTargetA;
+  bool hitOnTargetB  = hitOnTargetB;
+  bool hitOffTargetB = hitOffTargetB;
+  bool lockedOut = lockedOut;
   // read analog pins
   volatile int32_t weaponA, lameA, groundA, adc3;
   volatile int32_t weaponB, lameB, groundB, adc7;
@@ -285,165 +294,76 @@ void handleEpeeHit() {
   // Serial.println("Inside: Handle EPEE Function");
   // Implement the specific behavior for a hit in Epee mode
   // read analog pins
-    int16_t weaponA, lameA, groundA, adc3;
-    int16_t weaponB, lameB, groundB, adc7;
-    weaponA = ads1115_A.readADC_SingleEnded(0);    // Read from channel 0 of the first ADS1115
-    lameA = ads1115_A.readADC_SingleEnded(1);    // Read from channel 1 of the first ADS1115
-    groundA = ads1115_A.readADC_SingleEnded(2);    // Read from channel 2 of the first ADS1115
+  int depressed_ON_A_SIDE = depressed_ON_A_SIDE;
+  int depressed_ON_B_SIDE = depressed_ON_B_SIDE;
+  bool depressedA    = depressedA;
+  bool depressedB    = depressedB;
+  bool hitOnTargetA  = hitOnTargetA;
+  bool hitOffTargetA = hitOffTargetA;
+  bool hitOnTargetB  = hitOnTargetB;
+  bool hitOffTargetB = hitOffTargetB;
+  bool lockedOut = lockedOut;
+  // read analog pins
+  volatile int32_t weaponA, lameA, groundA, adc3;
+  volatile int32_t weaponB, lameB, groundB, adc7;
+  weaponA = ads1115_A.readADC_SingleEnded(0);    // Read from channel 0 of the first ADS1115
+  lameA = ads1115_A.readADC_SingleEnded(1);    // Read from channel 1 of the first ADS1115
+  //groundA = ads1115_A.readADC_SingleEnded(2);    // Read from channel 2 of the first ADS1115
 
-    weaponB = ads1115_B.readADC_SingleEnded(0);   // Read from channel 0 of the second ADS1115
-    lameB = ads1115_B.readADC_SingleEnded(1);   // Read from channel 1 of the second ADS1115
-    groundB = ads1115_B.readADC_SingleEnded(2);   // Read from channel 2 of the second ADS1115
-    // Serial.print("Default ADS1115 (0x48) weaponA 0: "); Serial.println(weaponA);
-    // Serial.print("Default ADS1115 (0x48) lameA 1: "); Serial.println(lameA);
-    // Serial.print("Default ADS1115 (0x48) groundA 2: "); Serial.println(groundA);
-    
-    // Serial.print("ADDR ADS1115 (0x49) weaponB 4: "); Serial.println(weaponB);
-    // Serial.print("ADDR ADS1115 (0x49) lameB 5: "); Serial.println(lameB);
-    // Serial.print("ADDR ADS1115 (0x49) groundB 6: "); Serial.println(groundB);
+  weaponB = ads1115_B.readADC_SingleEnded(0);   // Read from channel 0 of the second ADS1115
+  lameB = ads1115_B.readADC_SingleEnded(1);   // Read from channel 1 of the second ADS1115
+  //groundB = ads1115_B.readADC_SingleEnded(2);   // Read from channel 2 of the second ADS1115
+  // Serial.print("Default ADS1115 (0x48) weaponA 0: "); Serial.println(weaponA);
+  // Serial.print("Default ADS1115 (0x48) lameA 1: "); Serial.println(lameA);
+  // Serial.print("Default ADS1115 (0x48) groundA 2: "); Serial.println(groundA);
+  
+  // Serial.print("ADDR ADS1115 (0x49) weaponB 4: "); Serial.println(weaponB);
+  // Serial.print("ADDR ADS1115 (0x49) lameB 5: "); Serial.println(lameB);
+  // Serial.print("ADDR ADS1115 (0x49) groundB 6: "); Serial.println(groundB);
 
-    //_____Check for lockout___
-    long now = micros();
-    if ((hitOnTargetA && (depressAtime + epeeMode.lockoutTime < now)) 
-                      ||
-        (hitOnTargetB && (depressBtime + epeeMode.lockoutTime < now))) {
-      lockedOut = true;
-    }
-
-    // weapon A
-    //  no hit for A yet    && weapon depress    && opponent lame touched
-    if (hitOnTargetA == false) {
-      if (weaponA > (Epee_Weapon_OnTarget_Threshold - Allowable_Deviation) && weaponA < (Epee_Weapon_OnTarget_Threshold + Allowable_Deviation)
-                                                                      && 
-              lameA > (Epee_Lame_OnTarget_Threshold - Allowable_Deviation) && lameA < (Epee_Lame_OnTarget_Threshold + Allowable_Deviation)) {
-          if (!depressedA) {
-            long depressAtime = micros();
-            depressedA   = true;
-          } else {
-            if (depressAtime + epeeMode.depressTime <= micros()) {
-                hitOnTargetA = true;
-            }
-          }
-      } else {
-          // reset these values if the depress time is short.
-          if (depressedA == true) {
-            depressAtime = 0;
-            depressedA   = 0;
-          }
-      }
-    }
-
-    // weapon B
-    //  no hit for B yet    && weapon depress    && opponent lame touched
-    if (hitOnTargetB == false) {
-      if (weaponB > (Epee_Weapon_OnTarget_Threshold - Allowable_Deviation) && weaponB < (Epee_Weapon_OnTarget_Threshold + Allowable_Deviation)
-                                                                      && 
-              lameB > (Epee_Lame_OnTarget_Threshold - Allowable_Deviation) && lameB < (Epee_Lame_OnTarget_Threshold + Allowable_Deviation)) {
-          if (!depressedB) {
-            long depressBtime = micros();
-            depressedB   = true;
-          } else {
-            if (depressBtime + epeeMode.depressTime <= micros()) {
-                hitOnTargetB = true;
-            }
-          }
-      } else {
-          // reset these values if the depress time is short.
-          if (depressedB == !true) {
-            depressBtime = 0;
-            depressedB   = 0;
-          }
-      }
-    }
+  if(!CheckForLockout(hitOnTargetA, hitOffTargetA, hitOnTargetB, hitOffTargetB, depressAtime, depressBtime, currentMode)) {
+    handleHitWeapon(weaponA, lameB, depressed_ON_A_SIDE, depressedA, depressAtime, currentMode);
+    handleHitWeapon(weaponB, lameA, depressed_ON_B_SIDE, depressedB, depressBtime, currentMode);
+    return; //returns to the handleHit; if locked out
+  }
 }
 
 void handleSabreHit() {
   // Serial.println("Inside: Handle Sabre Function");
   // Implement the specific behavior for a hit in Sabre mode
   // read analog pins
-    int16_t weaponA, lameA, groundA, adc3;
-    int16_t weaponB, lameB, groundB, adc7;
-    weaponA = ads1115_A.readADC_SingleEnded(0);    // Read from channel 0 of the first ADS1115
-    lameA = ads1115_A.readADC_SingleEnded(1);    // Read from channel 1 of the first ADS1115
-    groundA = ads1115_A.readADC_SingleEnded(2);    // Read from channel 2 of the first ADS1115
+  // Serial.println("Inside: Handle Foil Function");
+  int depressed_ON_A_SIDE = depressed_ON_A_SIDE;
+  int depressed_ON_B_SIDE = depressed_ON_B_SIDE;
+  bool depressedA    = depressedA;
+  bool depressedB    = depressedB;
+  bool hitOnTargetA  = hitOnTargetA;
+  bool hitOffTargetA = hitOffTargetA;
+  bool hitOnTargetB  = hitOnTargetB;
+  bool hitOffTargetB = hitOffTargetB;
+  bool lockedOut = lockedOut;
+  // read analog pins
+  volatile int32_t weaponA, lameA, groundA, adc3;
+  volatile int32_t weaponB, lameB, groundB, adc7;
+  weaponA = ads1115_A.readADC_SingleEnded(0);    // Read from channel 0 of the first ADS1115
+  lameA = ads1115_A.readADC_SingleEnded(1);    // Read from channel 1 of the first ADS1115
+  //groundA = ads1115_A.readADC_SingleEnded(2);    // Read from channel 2 of the first ADS1115
 
-    weaponB = ads1115_B.readADC_SingleEnded(0);   // Read from channel 0 of the second ADS1115
-    lameB = ads1115_B.readADC_SingleEnded(1);   // Read from channel 1 of the second ADS1115
-    groundB = ads1115_B.readADC_SingleEnded(2);   // Read from channel 2 of the second ADS1115
-  //   Serial.print("Default ADS1115 (0x48) weaponA 0: "); Serial.println(weaponA);
-  //   Serial.print("Default ADS1115 (0x48) lameA 1: "); Serial.println(lameA);
-  //   Serial.print("Default ADS1115 (0x48) groundA 2: "); Serial.println(groundA);
-    
-  //   Serial.print("ADDR ADS1115 (0x49) weaponB 4: "); Serial.println(weaponB);
-  //   Serial.print("ADDR ADS1115 (0x49) lameB 5: "); Serial.println(lameB);
-  //   Serial.print("ADDR ADS1115 (0x49) groundB 6: "); Serial.println(groundB);
-  // //_____Check for lockout___
-   long now = micros();
-   if (((hitOnTargetA) && (depressAtime + sabreMode.lockoutTime < now)) 
-                                        || 
-       ((hitOnTargetB) && (depressBtime + sabreMode.lockoutTime < now))) {
-      lockedOut = true;
-   }
+  weaponB = ads1115_B.readADC_SingleEnded(0);   // Read from channel 0 of the second ADS1115
+  lameB = ads1115_B.readADC_SingleEnded(1);   // Read from channel 1 of the second ADS1115
+  //groundB = ads1115_B.readADC_SingleEnded(2);   // Read from channel 2 of the second ADS1115
+  // Serial.print("Default ADS1115 (0x48) weaponA 0: "); Serial.println(weaponA);
+  // Serial.print("Default ADS1115 (0x48) lameA 1: "); Serial.println(lameA);
+  // Serial.print("Default ADS1115 (0x48) groundA 2: "); Serial.println(groundA);
+  
+  // Serial.print("ADDR ADS1115 (0x49) weaponB 4: "); Serial.println(weaponB);
+  // Serial.print("ADDR ADS1115 (0x49) lameB 5: "); Serial.println(lameB);
+  // Serial.print("ADDR ADS1115 (0x49) groundB 6: "); Serial.println(groundB);
 
-  // weapon A
- if (!hitOnTargetA && !hitOffTargetA) {
-      // Off target
-      if (weaponA > weapon_OffTarget_Threshold && lameB < lame_OffTarget_Threshold) {
-          if (!depressedA) {
-              long depressAtime = micros();
-              depressedA = true;
-          } else if (depressAtime + foilMode.depressTime <= now) {
-              hitOffTargetA = true;
-          }
-      } else {
-      // on target
-      if (weaponA > (lame_OnTarget_Threshold - Allowable_Deviation) && weaponA < (lame_OnTarget_Threshold + Allowable_Deviation) 
-                                                                    && 
-            lameB > (lame_OnTarget_Threshold - Allowable_Deviation) && lameB < (lame_OnTarget_Threshold + Allowable_Deviation)) {
-         if (!depressedA) {
-            long depressAtime = micros();
-            depressedA   = true;
-         } else {
-            if (depressAtime + sabreMode.depressTime <= micros()) {
-                hitOnTargetA = true;
-            }
-         }
-      } else {
-         // reset these values if the depress time is short.
-         depressAtime = 0;
-         depressedA   = 0;
-      }
-   }
- }
-  // weapon B
-  if (!hitOnTargetB && !hitOffTargetB) {
-      // Off target
-      if (weaponB > weapon_OffTarget_Threshold && lameA < lame_OffTarget_Threshold) {
-          if (!depressedB) {
-              long depressBtime = micros();
-              depressedB = true;
-          } else if (depressBtime + foilMode.depressTime <= now) {
-              hitOffTargetB = true;
-          }
-      } else {
-      // on target
-      if (weaponB > (lame_OnTarget_Threshold - Allowable_Deviation) && weaponB < (lame_OnTarget_Threshold + Allowable_Deviation) 
-                                                                    &&
-            lameA > (lame_OnTarget_Threshold - Allowable_Deviation) && lameA < (lame_OnTarget_Threshold + Allowable_Deviation)) {
-         if (!depressedB) {
-            long depressBtime = micros();
-            depressedB   = true;
-         } else {
-            if (depressBtime + sabreMode.depressTime <= micros()) {
-                hitOnTargetB = true;
-            }
-         }
-      } else {
-         // reset these values if the depress time is short.
-         depressBtime = 0;
-         depressedB   = 0;
-      }
-    }
+  if(!CheckForLockout(hitOnTargetA, hitOffTargetA, hitOnTargetB, hitOffTargetB, depressAtime, depressBtime, currentMode)) {
+    handleHitWeapon(weaponA, lameB, depressed_ON_A_SIDE, depressedA, depressAtime, currentMode);
+    handleHitWeapon(weaponB, lameA, depressed_ON_B_SIDE, depressedB, depressBtime, currentMode);
+    return; //returns to the handleHit; if locked out
   }
 }
 
@@ -583,13 +503,30 @@ void setup() {
 }
 
 void loop() {
+  volatile int32_t weaponA, lameA, groundA, adc3;
+  volatile int32_t weaponB, lameB, groundB, adc7;
+  weaponA = ads1115_A.readADC_SingleEnded(0);    // Read from channel 0 of the first ADS1115
+  lameA = ads1115_A.readADC_SingleEnded(1);    // Read from channel 1 of the first ADS1115
+  //groundA = ads1115_A.readADC_SingleEnded(2);    // Read from channel 2 of the first ADS1115
+
+  weaponB = ads1115_B.readADC_SingleEnded(0);   // Read from channel 0 of the second ADS1115
+  lameB = ads1115_B.readADC_SingleEnded(1);   // Read from channel 1 of the second ADS1115
+  //groundB = ads1115_B.readADC_SingleEnded(2);   // Read from channel 2 of the second ADS1115
+  // Serial.print("Default ADS1115 (0x48) weaponA 0: "); Serial.println(weaponA);
+  // Serial.print("Default ADS1115 (0x48) lameA 1: "); Serial.println(lameA);
+  // Serial.print("Default ADS1115 (0x48) groundA 2: "); Serial.println(groundA);
+  
+  // Serial.print("ADDR ADS1115 (0x49) weaponB 4: "); Serial.println(weaponB);
+  // Serial.print("ADDR ADS1115 (0x49) lameB 5: "); Serial.println(lameB);
+  // Serial.print("ADDR ADS1115 (0x49) groundB 6: "); Serial.println(groundB);
   //main code here, to run repeatedly:
   if(BUTTON_Debounce(MODE_BUTTON_PIN)){
     modeChange();
   }
 
   if(!lockedOut) {
-    handleHit(); // will point to a Mode instance in struct Mode Foil,Epee, or Sabre
+    handleHit(hitOnTargetA,hitOffTargetA); // will point to a Mode instance in struct Mode Foil,Epee, or Sabre
+    handleHit(hitOnTargetB,hitOffTargetB); // will point to a Mode instance in struct Mode Foil,Epee, or Sabre
   }
 
   CheckForLockout(hitOnTargetA, hitOffTargetA, hitOnTargetB, hitOffTargetB, depressAtime, depressBtime, currentMode); // This is either true or False
@@ -624,11 +561,6 @@ void loop() {
     digitalWrite(buzzerPin, HIGH);
     }
 
-  // String serData = String("hitOnTargetA  : ") + hitOnTargetA  + "\n"
-  //                       + "hitOffTargetA : "  + hitOffTargetA + "\n"
-  //                       + "hitOffTargetB : "  + hitOffTargetB + "\n"
-  //                       + "hitOnTargetB  : "  + hitOnTargetB  + "\n"
-  //                       + "Locked Out  : "  + lockedOut   + "\n";
-  //   Serial.println(serData);
+
 }
  
