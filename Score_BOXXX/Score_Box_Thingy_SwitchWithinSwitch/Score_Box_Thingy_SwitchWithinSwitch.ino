@@ -1,4 +1,16 @@
 //Scorebox thingy with switch case(Foil, Epee, Sabre) leading into switch case(OnTargetA, OffTargetA, OnTargetB, OffTargetB)
+/*
+TODO:
+- add void setup()
+- add a way to reset
+    - reset the lockout timer
+    - reset the depress timer
+    - LEDs OFF
+    - Buzzer OFF
+    
+- add a way to change weapon mode (button)
+-
+*/
 #include <Wire.h>
 #include <Adafruit_ADS1X15.h>
 #include <Arduino.h>
