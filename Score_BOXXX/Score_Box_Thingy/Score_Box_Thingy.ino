@@ -386,7 +386,6 @@ void loop(void)
   }
 
     Hadle_OnTargetDetected(timeHitWasMade);
-        
     int hitResultA     = handleHitOnTargetA(weaponA_ADS_OnTarget, lameB_ADS_OnTarget, timeHitWasMade);
     int hitResultB     = handleHitOnTargetB(weaponB_ADS_OnTarget, lameA_ADS_OnTarget, timeHitWasMade);
     int offHitResultA  = handleHitOffTargetA(weaponA_ADS_OffTarget, timeHitWasMade);
@@ -450,6 +449,24 @@ void loop(void)
                 depressTimer(timeHitWasMade,  &foilMode);
                 //start the lockout timer
                 if (!checkForLockout(timeHitWasMade,  &foilMode)){break;} // set the lockout timer and set Locked
+            }
+            if (hitResultA == 1 && hitResultB == 2){ //symoltanious hit ON Target
+                //turn on the LEDs
+                // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
+                fill_solid(pixels, NUMPIXELS, CRGB::Red); // Bright RED color.
+                fill_solid(pixels222, NUMPIXELS, CRGB::Green); // Moderately bright GREEN color.
+                FastLED.show(); // This sends the updated pixel color to the hardware.
+                digitalWrite(BUZZER_PIN, HIGH);
+                //turn off the LEDs
+            }
+            if (offHitResultA == 3 && offHitResultB == 4){ //symoltanious hit OFF Target
+                //turn on the LEDs
+                // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
+                fill_solid(pixels, NUMPIXELS, CRGB::Blue); // Bright Blue color.
+                fill_solid(pixels222, NUMPIXELS, CRGB::Yellow); // Yellow color.
+                FastLED.show(); // This sends the updated pixel color to the hardware.
+                digitalWrite(BUZZER_PIN, HIGH);
+                //turn off the LEDs
             }
         break;
         case 2: //EPEE

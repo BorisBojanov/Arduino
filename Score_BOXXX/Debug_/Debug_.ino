@@ -29,7 +29,8 @@
   // ads.setGain(GAIN_FOUR);       // 4x gain   +/- 1.024V  1 bit = 0.5mV    0.03125mV
   // ads.setGain(GAIN_EIGHT);      // 8x gain   +/- 0.512V  1 bit = 0.25mV   0.015625mV
   // ads.setGain(GAIN_SIXTEEN);    // 16x gain  +/- 0.256V  1 bit = 0.125mV  0.0078125mV
-
+  Adafruit_ADS1115 ads1115_weaponONTARGET_A_B;  // ADS1115 with ADDR pin floating (default address 0x48)
+  Adafruit_ADS1115 ads1115_weaponOFFTARGET_A_B;     // ADS1115 with ADDR pin connected to 3.3V (address 0x49)
   Adafruit_ADS1115 ads1115_A;  // ADS1115 with ADDR pin floating (default address 0x48)
   Adafruit_ADS1115 ads1115_B;     // ADS1115 with ADDR pin connected to 3.3V (address 0x49)
   const int threshold = 400; // The threshold for triggering the interrupt
@@ -127,6 +128,47 @@ WeaponMode epeeMode = {45000, 2000, handleEpeeHit};
 WeaponMode sabreMode = {120000, 1000, handleSabreHit};
 WeaponMode* currentMode = &foilMode; // Default Mode
 
+
+
+// struct ADC_OnTarget_readings {
+//     //=============ADS_with On target threshold=======
+//     uint32_t weapon_ADS_OnTarget; // WeaponA or WeaponB
+//     uint32_t lame_ADS_OnTarget; // LameA or LameB
+//     int HitTypeINT; // 1 for OnTargetA, 2 for OffTargetA, 3 for OnTargetB, 4 for OffTargetB
+// };
+// ADC_OnTarget_readings OnTargetA  = {ads1115_weaponONTARGET_A_B.readADC_SingleEnded(0), ads1115_weaponONTARGET_A_B.readADC_SingleEnded(1), 6 };
+// ADC_OnTarget_readings OnTargetB  = {ads1115_weaponONTARGET_A_B.readADC_SingleEnded(2), ads1115_weaponONTARGET_A_B.readADC_SingleEnded(3), 7};
+// ADC_OnTarget_readings OffTargetA = {ads1115_weaponOFFTARGET_A_B.readADC_SingleEnded(0), ads1115_weaponOFFTARGET_A_B.readADC_SingleEnded(1), 8 };
+// ADC_OnTarget_readings OffTargetB = {ads1115_weaponOFFTARGET_A_B.readADC_SingleEnded(2), ads1115_weaponOFFTARGET_A_B.readADC_SingleEnded(3), 9};
+// ADC_OnTarget_readings *HitType = &OnTargetA; // Make HitType point to OnTargetA
+// int HitTypes = HitType -> HitTypeINT; // Now this line is safe
+
+// //These functions check the depress time and then set the HitTypeINT to the correct value
+// void Ident_OnTargetA(ADC_OnTarget_readings* newHitType){
+//     /*
+//     currentMode is being declared like this since we are referenceing a value within foilMode, EpeeMode, or Sabre Mode
+//         WeaponMode currentMode
+//     if we wanted to refference the mode itself and not a value within the mode we would say
+//         WeaponMode *currentMode
+//     _____________________
+//     Weapon Mode dependant
+//     Check depress time, basically a weapon dependant Button debounce.
+//     return
+//     HitType = 1
+//     aka
+//     HitType = Ident_OnTargetA
+//     */
+//     HitType = newHitType; // Set the HitType to the newHitTypes struct passed in from main loop
+// }
+// void Ident_OnTargetB (ADC_OnTarget_readings* newHitType){
+// HitType = newHitType; // Set the HitType to the newHitTypes struct passed in from main loop
+// }
+// void Ident_OffTargetA(ADC_OnTarget_readings* newHitType){
+// HitType = newHitType; // Set the HitType to the newHitTypes struct passed in from main loop
+// }
+// void Ident_OffTargetB(ADC_OnTarget_readings* newHitType){    
+// HitType = newHitType; // Set the HitType to the newHitTypes struct passed in from main loop
+// }
 
 void handleFoilHit() {
   Serial.println("Inside: Handle Foil Function");

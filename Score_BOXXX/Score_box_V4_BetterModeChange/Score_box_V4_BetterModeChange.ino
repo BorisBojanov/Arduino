@@ -1,8 +1,12 @@
 #include <FastLED.h>
-#include <Wire.h>
+#include <Wire.h> // for I2C library
 #include <Adafruit_ADS1X15.h>
 //TODO: set up debug levels correctly
 
+#define ADS_A 0x48
+#define ADS_B 0x49
+#define ADS_C 0x4A
+#define ADS_D 0x4B
 //=======================
 // Fast LED Setup
 //=======================
@@ -90,8 +94,8 @@
 //==========================
 // states
 //==========================
-volatile boolean depressedA  = false;
-volatile boolean depressedB  = false;
+volatile boolean depressedA    = false;
+volatile boolean depressedB    = false;
 volatile boolean hitOnTargetA  = false;
 volatile boolean hitOffTargetA = false;
 volatile boolean hitOnTargetB  = false;
@@ -391,7 +395,7 @@ void handleSabreHit() {
 }
 
 void handleHit() {
-    currentMode->handleHit(); // will pint to a Mode instance in struct Mode
+    currentMode->handleHit(); // will point to a Mode instance in struct Mode
 }
 
 void modeChange() { 
@@ -536,6 +540,7 @@ void loop() {
   }
 
   handleHit();
+
   if (hitOnTargetA) {
     // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
     fill_solid(pixels222, NUMPIXELS, CRGB::Green); // Moderately bright GREEN color.
