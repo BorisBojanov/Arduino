@@ -68,48 +68,48 @@ constexpr uint16_t MUX_BY_CHANNEL[] = {
     ADS1X15_REG_CONFIG_MUX_SINGLE_3  ///< Single-ended AIN3
 };                                   ///< MUX config by channel
 
-#define ADS1X15_REG_CONFIG_PGA_MASK (0x0E00)   ///< PGA Mask
-#define ADS1X15_REG_CONFIG_PGA_6_144V (0x0000) ///< +/-6.144V range = Gain 2/3
-#define ADS1X15_REG_CONFIG_PGA_4_096V (0x0200) ///< +/-4.096V range = Gain 1
+#define ADS1X15_REG_CONFIG_PGA_MASK (0x0E00)   ///< PGA Mask                      (00001110 00000000)   
+#define ADS1X15_REG_CONFIG_PGA_6_144V (0x0000) ///< +/-6.144V range = Gain 2/3    (00000000 00000000)
+#define ADS1X15_REG_CONFIG_PGA_4_096V (0x0200) ///< +/-4.096V range = Gain 1      (00000010 00000000)
 #define ADS1X15_REG_CONFIG_PGA_2_048V                                          \
-  (0x0400) ///< +/-2.048V range = Gain 2 (default)
-#define ADS1X15_REG_CONFIG_PGA_1_024V (0x0600) ///< +/-1.024V range = Gain 4
-#define ADS1X15_REG_CONFIG_PGA_0_512V (0x0800) ///< +/-0.512V range = Gain 8
-#define ADS1X15_REG_CONFIG_PGA_0_256V (0x0A00) ///< +/-0.256V range = Gain 16
+  (0x0400) ///< +/-2.048V range = Gain 2 (default)                                (00000100 00000000) 
+#define ADS1X15_REG_CONFIG_PGA_1_024V (0x0600) ///< +/-1.024V range = Gain 4      (00000110 00000000)
+#define ADS1X15_REG_CONFIG_PGA_0_512V (0x0800) ///< +/-0.512V range = Gain 8      (00001000 00000000)
+#define ADS1X15_REG_CONFIG_PGA_0_256V (0x0A00) ///< +/-0.256V range = Gain 16     (00001010 00000000)
 
-#define ADS1X15_REG_CONFIG_MODE_MASK (0x0100)   ///< Mode Mask
-#define ADS1X15_REG_CONFIG_MODE_CONTIN (0x0000) ///< Continuous conversion mode
+#define ADS1X15_REG_CONFIG_MODE_MASK (0x0100)   ///< Mode Mask                    (00000001 00000000)
+#define ADS1X15_REG_CONFIG_MODE_CONTIN (0x0000) ///< Continuous conversion mode   (00000000 00000000)
 #define ADS1X15_REG_CONFIG_MODE_SINGLE                                         \
-  (0x0100) ///< Power-down single-shot mode (default)
+  (0x0100) ///< Power-down single-shot mode (default)                       (00000001 00000000)
 
-#define ADS1X15_REG_CONFIG_RATE_MASK (0x00E0) ///< Data Rate Mask
+#define ADS1X15_REG_CONFIG_RATE_MASK (0x00E0) ///< Data Rate Mask           (00000000 11100000)
 
-#define ADS1X15_REG_CONFIG_CMODE_MASK (0x0010) ///< CMode Mask
+#define ADS1X15_REG_CONFIG_CMODE_MASK (0x0010) ///< CMode Mask              (00000000 00010000)
 #define ADS1X15_REG_CONFIG_CMODE_TRAD                                          \
-  (0x0000) ///< Traditional comparator with hysteresis (default)
-#define ADS1X15_REG_CONFIG_CMODE_WINDOW (0x0010) ///< Window comparator
+  (0x0000) ///< Traditional comparator with hysteresis (default)            (00000000 00000000)
+#define ADS1X15_REG_CONFIG_CMODE_WINDOW (0x0010) ///< Window comparator     (00000000 00010000)
 
-#define ADS1X15_REG_CONFIG_CPOL_MASK (0x0008) ///< CPol Mask
+#define ADS1X15_REG_CONFIG_CPOL_MASK (0x0008) ///< CPol Mask                (00000000 00001000)
 #define ADS1X15_REG_CONFIG_CPOL_ACTVLOW                                        \
-  (0x0000) ///< ALERT/RDY pin is low when active (default)
+  (0x0000) ///< ALERT/RDY pin is low when active (default)                  (00000000 00000000)
 #define ADS1X15_REG_CONFIG_CPOL_ACTVHI                                         \
-  (0x0008) ///< ALERT/RDY pin is high when active
+  (0x0008) ///< ALERT/RDY pin is high when active                           (00000000 00001000)
 
 #define ADS1X15_REG_CONFIG_CLAT_MASK                                           \
-  (0x0004) ///< Determines if ALERT/RDY pin latches once asserted
+  (0x0004) ///< Determines if ALERT/RDY pin latches once asserted           (00000000 00000100)
 #define ADS1X15_REG_CONFIG_CLAT_NONLAT                                         \
-  (0x0000) ///< Non-latching comparator (default)
+  (0x0000) ///< Non-latching comparator (default)                           (00000000 00000000)
 #define ADS1X15_REG_CONFIG_CLAT_LATCH (0x0004) ///< Latching comparator
 
 #define ADS1X15_REG_CONFIG_CQUE_MASK (0x0003) ///< CQue Mask
 #define ADS1X15_REG_CONFIG_CQUE_1CONV                                          \
-  (0x0000) ///< Assert ALERT/RDY after one conversions
+  (0x0000) ///< Assert ALERT/RDY after one conversions  (00000000 00000000)
 #define ADS1X15_REG_CONFIG_CQUE_2CONV                                          \
-  (0x0001) ///< Assert ALERT/RDY after two conversions
+  (0x0001) ///< Assert ALERT/RDY after two conversions  (00000000 00000001)
 #define ADS1X15_REG_CONFIG_CQUE_4CONV                                          \
-  (0x0002) ///< Assert ALERT/RDY after four conversions
-#define ADS1X15_REG_CONFIG_CQUE_NONE                                           \
-  (0x0003) ///< Disable the comparator and put ALERT/RDY in high state (default)
+  (0x0002) ///< Assert ALERT/RDY after four conversions (00000000 00000010)
+#define ADS1X15_REG_CONFIG_CQUE_NONE                                           \ 
+  (0x0003) ///< Disable the comparator and put ALERT/RDY in high state (default) (00000000 00000011)
 /*=========================================================================*/
 
 /** Gain settings */
@@ -131,14 +131,14 @@ typedef enum {
 #define RATE_ADS1015_2400SPS (0x00A0) ///< 2400 samples per second
 #define RATE_ADS1015_3300SPS (0x00C0) ///< 3300 samples per second
 
-#define RATE_ADS1115_8SPS (0x0000)   ///< 8 samples per second
-#define RATE_ADS1115_16SPS (0x0020)  ///< 16 samples per second
-#define RATE_ADS1115_32SPS (0x0040)  ///< 32 samples per second
-#define RATE_ADS1115_64SPS (0x0060)  ///< 64 samples per second
-#define RATE_ADS1115_128SPS (0x0080) ///< 128 samples per second (default)
-#define RATE_ADS1115_250SPS (0x00A0) ///< 250 samples per second
-#define RATE_ADS1115_475SPS (0x00C0) ///< 475 samples per second
-#define RATE_ADS1115_860SPS (0x00E0) ///< 860 samples per second
+#define RATE_ADS1115_8SPS (0x0000)   ///< 8 samples per second   (00000000 00000000)
+#define RATE_ADS1115_16SPS (0x0020)  ///< 16 samples per second  (00000000 00100000)
+#define RATE_ADS1115_32SPS (0x0040)  ///< 32 samples per second  (00000000 01000000)
+#define RATE_ADS1115_64SPS (0x0060)  ///< 64 samples per second  (00000000 01100000)
+#define RATE_ADS1115_128SPS (0x0080) ///< 128 samples per second (default) (00000000 10000000)
+#define RATE_ADS1115_250SPS (0x00A0) ///< 250 samples per second (00000000 10100000)
+#define RATE_ADS1115_475SPS (0x00C0) ///< 475 samples per second (00000000 11000000)
+#define RATE_ADS1115_860SPS (0x00E0) ///< 860 samples per second (00000000 11100000)
 
 /**************************************************************************/
 /*!
@@ -161,6 +161,7 @@ public:
   int16_t readADC_Differential_1_3();
   int16_t readADC_Differential_2_3();
   void startComparator_SingleEnded(uint8_t channel, int16_t threshold);
+  void startComparator_SingleEnded_WindowMode_ActiveLow(uint8_t channel,int16_t threshold);
   int16_t getLastConversionResults();
   float computeVolts(int16_t counts);
   void setGain(adsGain_t gain);

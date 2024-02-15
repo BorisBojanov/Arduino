@@ -547,18 +547,19 @@ void loop() {
     FastLED.show(); // This sends the updated pixel color to the hardware.
     digitalWrite(buzzerPin, HIGH);
     }
-  if (hitOffTargetA) {
-    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-    fill_solid(pixels222, NUMPIXELS, CRGB::Yellow); // Yellow color.
-    FastLED.show(); // This sends the updated pixel color to the hardware.
-    digitalWrite(buzzerPin, HIGH);
-    }
   if (hitOnTargetB) {
     // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
     fill_solid(pixels, NUMPIXELS, CRGB::Red); // Moderately bright RED color.
     FastLED.show(); // This sends the updated pixel color to the hardware.
     digitalWrite(buzzerPin, HIGH);
     }
+  if (hitOffTargetA) {
+    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
+    fill_solid(pixels222, NUMPIXELS, CRGB::Yellow); // Yellow color.
+    FastLED.show(); // This sends the updated pixel color to the hardware.
+    digitalWrite(buzzerPin, HIGH);
+    }
+
   if (hitOffTargetB){
     // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
     fill_solid(pixels, NUMPIXELS, CRGB::Blue); // Bright Blue color.

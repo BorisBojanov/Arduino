@@ -251,6 +251,46 @@ void Adafruit_ADS1X15::startComparator_SingleEnded(uint8_t channel,
 
 /**************************************************************************/
 /*!
+    @brief  Sets up the comparator to operate in basic mode, causing the
+            ALERT/RDY pin to assert (go from high to low) when the ADC
+            value exceeds the specified threshold.
+
+            This will also set the ADC in continuous conversion mode.
+
+    @param channel ADC channel to use
+    @param threshold comparator threshold
+*/
+/**************************************************************************/
+void Adafruit_ADS1X15::startComparator_SingleEnded_WindowMode_ActiveLow(uint8_t channel,
+                                                                        int16_t threshold) {
+  // Start with default values
+  uint16_t config =
+      ADS1X15_REG_CONFIG_CQUE_1CONV |   // Comparator enabled and asserts on 1
+                                        // match
+      ADS1X15_REG_CONFIG_CLAT_NONLAT |   // No Latching mode
+      ADS1X15_REG_CONFIG_CPOL_ACTVLOW | // Alert/Rdy active low   (default val)
+      ADS1X15_REG_CONFIG_CMODE_WINDOW |   // Traditional comparator (default val)
+      ADS1X15_REG_CONFIG_MODE_CONTIN |  // Continuous conversion mode
+      ADS1X15_REG_CONFIG_MODE_CONTIN;   // Continuous conversion mode
+
+  // Set PGA/voltage range
+  config |= m_gain;
+
+  // Set data rate
+  config |= m_dataRate;
+
+  config |= MUX_BY_CHANNEL[channel];
+
+  // Set the high threshold register
+  // Shift 12-bit results left 4 bits for the ADS1015
+  writeRegister(ADS1X15_REG_POINTER_HITHRESH, threshold << m_bitShift);
+
+  // Write config register to the ADC
+  writeRegister(ADS1X15_REG_POINTER_CONFIG, config);
+}
+
+/**************************************************************************/
+/*!
     @brief  In order to clear the comparator, we need to read the
             conversion results.  This function reads the last conversion
             results without changing the config value.
@@ -276,7 +316,7 @@ int16_t Adafruit_ADS1X15::getLastConversionResults() {
 
 /**************************************************************************/
 /*!
-    @brief  Returns true if conversion is complete, false otherwise.
+    @brief  Compute volts for the given raw counts.
 
     @param counts the ADC reading in raw counts
 

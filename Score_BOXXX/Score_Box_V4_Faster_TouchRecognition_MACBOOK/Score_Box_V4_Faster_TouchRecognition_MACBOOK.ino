@@ -245,7 +245,6 @@ void handleHitWeapon(int32_t weaponA_B, int32_t lameB_A, int& LeftORrigt, bool& 
       }
     }
   }
-  Serial.print(currentMode);
   String serData = String("hitOnTargetA  : ") + hitOnTargetA  + "\n"
                       + "hitOffTargetA : "  + hitOffTargetA + "\n"
                       + "hitOffTargetB : "  + hitOffTargetB + "\n"

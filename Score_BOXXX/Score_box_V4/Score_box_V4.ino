@@ -120,6 +120,8 @@ TODO: set up debug levels correctly
   #define SABRE_MODE 2
   int currentMode = FOIL_MODE;
   volatile bool modeJustChangedFlag = false;
+  volatile bool Left = false;
+  volatile bool Right = false;
 //=======================
 // Lockout & Depress Times
 //=======================
@@ -210,7 +212,7 @@ void handleWeaponA() {
                depressAtime = micros();
                depressedA   = true;
             } else {
-               if (depressAtime + depress[FOIL_MODE.depresstime] <= micros()) {
+               if (depressAtime + depress[FOIL_MODE] <= micros()) {
                   hitOnTargA = true;
                }
             }
@@ -254,32 +256,32 @@ void foil(){
   unsigned long now = millis(); // Arduino uses millis() to get the number of milliseconds since the board started running.
                               //It's similar to the Python monotonic_ns() function but gives time in ms not ns.
   //_____Check for lockout___
-  if (((hitOnTargetA || hitOffTargetA) && (depressAtime + LOCKOUT_TIME[FOIL_MODE] < now)) ||
-          ((hitOnTargetB || hitOffTargetB) && (depressBtime + LOCKOUT_TIME[FOIL_MODE] < now))) {
+  if (((hitOnTargA || hitOffTargA) && (depressAtime + lockout[FOIL_MODE] < now)) ||
+          ((hitOnTargB || hitOffTargB) && (depressBtime + lockout[FOIL_MODE] < now))) {
       lockedOut = true;
   }
 
   // ___Weapon A___
-  if (!hitOnTargetA && !hitOffTargetA) {
+  if (!hitOnTargA && !hitOffTargA) {
       // Off target
-      if (weaponAValue > 900 && lameBValue < 100) {
+      if (weaponA > 900 && lameB < 100) {
           if (!depressedA) {
               depressAtime = now;
               depressedA = true;
-          } else if (depressAtime + DEPRESS_TIME[FOIL_MODE] <= now) {
-              hitOffTargetA = true;
+          } else if (depressAtime + depress[FOIL_MODE] <= now) {
+              hitOffTargA = true;
               Left = true;
 
 
           }
       } else {
           // On target
-          if (weaponAValue > 400 && weaponAValue < 600 && lameBValue > 400 && lameBValue < 600) {
+          if (weaponA > 400 && weaponA < 600 && lameB > 400 && lameB < 600) {
               if (!depressedA) {
                   depressAtime = now;
                   depressedA = true;
-              } else if (depressAtime + DEPRESS_TIME[FOIL_MODE] <= now) {
-                  hitOnTargetA = true;
+              } else if (depressAtime + depress[FOIL_MODE] <= now) {
+                  hitOnTargA = true;
               }
           } else {
               depressAtime = 0;
@@ -289,24 +291,24 @@ void foil(){
   }
 
   // ___Weapon B___
-  if (!hitOnTargetB && !hitOffTargetB) {
+  if (!hitOnTargB && !hitOffTargB) {
       // Off target
-      if (weaponBValue > 900 && lameAValue < 100) {
+      if (weaponB > 900 && lameA < 100) {
           if (!depressedB) {
               depressBtime = now;
               depressedB = true;
-          } else if (depressBtime + DEPRESS_TIME[FOIL_MODE] <= now) {
-              hitOffTargetB = true;
-              Left = true;
+          } else if (depressBtime + depress[FOIL_MODE] <= now) {
+              hitOffTargB = true;
+              Right = true;
           }
       } else {
           // On target
-          if (weaponBValue > 400 && weaponBValue < 600 && lameAValue > 400 && lameAValue < 600) {
+          if (weaponB > 400 && weaponB < 600 && lameA > 400 && lameA < 600) {
               if (!depressedB) {
                   depressBtime = now;
                   depressedB = true;
-              } else if (depressBtime + DEPRESS_TIME[FOIL_MODE] <= now) {
-                  hitOnTargetB = true;
+              } else if (depressBtime + depress[FOIL_MODE] <= now) {
+                  hitOnTargB = true;
               }
           } else {
               depressBtime = 0;

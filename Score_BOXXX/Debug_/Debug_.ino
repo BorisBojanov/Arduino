@@ -530,12 +530,12 @@ void loop() {
     }
 
   
-  // String serData = String("hitOnTargetA  : ") + hitOnTargetA  + "\n"
-  //                       + "hitOffTargetA : "  + hitOffTargetA + "\n"
-  //                       + "hitOffTargetB : "  + hitOffTargetB + "\n"
-  //                       + "hitOnTargetB  : "  + hitOnTargetB  + "\n"
-  //                       + "Locked Out  : "  + lockedOut   + "\n";
-  // Serial.println(serData);
+  String serData = String("hitOnTargetA  : ") + hitOnTargetA  + "\n"
+                        + "hitOffTargetA : "  + hitOffTargetA + "\n"
+                        + "hitOffTargetB : "  + hitOffTargetB + "\n"
+                        + "hitOnTargetB  : "  + hitOnTargetB  + "\n"
+                        + "Locked Out  : "  + lockedOut   + "\n";
+  Serial.println(serData);
   if (currentMode == &sabreMode && (hitOffTargetB || hitOffTargetA)){
     resetValues();
     }

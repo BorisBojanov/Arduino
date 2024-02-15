@@ -67,6 +67,7 @@
   volatile int groundA = 0;
   volatile int groundB = 0;
 
+  
   // for all X: weapon >= Values >= lame  
   int16_t Allowable_Deviation = 500;
   //Foil/Sabre Values
@@ -81,6 +82,7 @@
   int16_t Epee_Weapon_OnTarget_Threshold = 13100;
   int16_t Epee_Lame_OnTarget_Threshold = 13100;
   int16_t Epee_Ground_OnTarget_Threshold = 13100;
+  
 //=======================
 // depress and timeouts
 //=======================
@@ -90,12 +92,14 @@
 //==========================
 // states
 //==========================
-volatile boolean depressedA  = false;
-volatile boolean depressedB  = false;
-volatile boolean hitOnTargetA  = false;
-volatile boolean hitOffTargetA = false;
-volatile boolean hitOnTargetB  = false;
-volatile boolean hitOffTargetB = false;
+short int number = 0;
+bool state      = true;     //true means weapon up, false means down
+bool depressedA  = false;
+bool depressedB  = false;
+bool hitOnTargetA  = false;
+bool hitOffTargetA = false;
+bool hitOnTargetB  = false;
+bool hitOffTargetB = false;
 //==========================
 //Forward Declare The functions used by struct WeaponMode
 //==========================
@@ -129,7 +133,7 @@ WeaponMode* currentMode = &foilMode; // Default Mode
 
 
 void handleFoilHit() {
-  Serial.println("Inside: Handle Foil Function");
+  //Serial.println("Inside: Handle Foil Function");
 
   // read analog pins
     int16_t weaponA, lameA, groundA, adc3;
@@ -142,12 +146,12 @@ void handleFoilHit() {
     lameB = ads1115_B.readADC_SingleEnded(1);   // Read from channel 1 of the second ADS1115
     groundB = ads1115_B.readADC_SingleEnded(2);   // Read from channel 2 of the second ADS1115
     Serial.print("Default ADS1115 (0x48) weaponA 0: "); Serial.println(weaponA);
-    // Serial.print("Default ADS1115 (0x48) lameA 1: "); Serial.println(lameA);
-    // Serial.print("Default ADS1115 (0x48) groundA 2: "); Serial.println(groundA);
+    Serial.print("Default ADS1115 (0x48) lameA 1: "); Serial.println(lameA);
+    Serial.print("Default ADS1115 (0x48) groundA 2: "); Serial.println(groundA);
     
-    // Serial.print("ADDR ADS1115 (0x49) weaponB 4: "); Serial.println(weaponB);
-    // Serial.print("ADDR ADS1115 (0x49) lameB 5: "); Serial.println(lameB);
-    // Serial.print("ADDR ADS1115 (0x49) groundB 6: "); Serial.println(groundB);
+    Serial.print("ADDR ADS1115 (0x49) weaponB 4: "); Serial.println(weaponB);
+    Serial.print("ADDR ADS1115 (0x49) lameB 5: "); Serial.println(lameB);
+    Serial.print("ADDR ADS1115 (0x49) groundB 6: "); Serial.println(groundB);
     
 
     long now = micros(); // Arduino uses millis() to get the number of milliseconds since the board started running.
@@ -157,56 +161,40 @@ void handleFoilHit() {
                                          ||
         ((hitOnTargetB || hitOffTargetB) && (foilMode.lockoutTime < now))) {
       lockedOut = true;
-      resetValues();
   }
 
   // ___Weapon A___
   if (!hitOnTargetA && !hitOffTargetA) {
-      // Off target
-      if (weaponA > weapon_OffTarget_Threshold && lameB < lame_OffTarget_Threshold) {
-              hitOffTargetA = true;
-              // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-              fill_solid(pixels222, NUMPIXELS, CRGB::Yellow); // Yellow color.
-              FastLED.show(); // This sends the updated pixel color to the hardware.
-              digitalWrite(buzzerPin, HIGH);
-
-         // On target     
-      }
-      else if ((weaponA > (weapon_OnTarget_Threshold - Allowable_Deviation) && weaponA < (weapon_OnTarget_Threshold + Allowable_Deviation)) 
-                                                                          && 
-                  (lameB > (lame_OnTarget_Threshold - Allowable_Deviation) && lameB < (lame_OnTarget_Threshold + Allowable_Deviation))) {
-                  hitOnTargetA = true;
-                  // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-                  fill_solid(pixels222, NUMPIXELS, CRGB::Green); // Moderately bright GREEN color.
-                  FastLED.show(); // This sends the updated pixel color to the hardware.
-                  digitalWrite(buzzerPin, HIGH);
-      }
+    // Off target
+    if (weaponA > weapon_OffTarget_Threshold && lameB < lame_OffTarget_Threshold) {
+    number = 4; // hitOffTargetA
+           
     }
+    // On target
+    else if ((weaponA > (weapon_OnTarget_Threshold - Allowable_Deviation) && weaponA < (weapon_OnTarget_Threshold + Allowable_Deviation)) 
+                                                                        && 
+                (lameB > (lame_OnTarget_Threshold - Allowable_Deviation) && lameB < (lame_OnTarget_Threshold + Allowable_Deviation))) {
+      number = 1; // hitOnTargetA
+    }
+  }
         
   // ___Weapon B___
   if (!hitOnTargetB && !hitOffTargetB) {
-      // Off target
-      if (weaponB > weapon_OffTarget_Threshold && lameA < lame_OffTarget_Threshold) {
-              hitOffTargetB = true;
-              // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-              fill_solid(pixels, NUMPIXELS, CRGB::Blue); // Bright Blue color.
-              FastLED.show(); // This sends the updated pixel color to the hardware.
-              digitalWrite(buzzerPin, HIGH);
-      // On target
-      } else if (weaponB > (weapon_OnTarget_Threshold - Allowable_Deviation) && weaponB < (weapon_OnTarget_Threshold + Allowable_Deviation)
-                                                                          && 
-                  lameA > (lame_OnTarget_Threshold - Allowable_Deviation) && lameA < (lame_OnTarget_Threshold + Allowable_Deviation)) {
-            hitOnTargetB = true;
-            // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-            fill_solid(pixels, NUMPIXELS, CRGB::Red); // Moderately bright RED color.
-            FastLED.show(); // This sends the updated pixel color to the hardware.
-            digitalWrite(buzzerPin, HIGH);
-      } 
-    }
+    // Off target
+    if (weaponB > weapon_OffTarget_Threshold && lameA < lame_OffTarget_Threshold) {
+      number = 3; // hitOffTargetB
+    // On target
+    } else if (weaponB > (weapon_OnTarget_Threshold - Allowable_Deviation) && weaponB < (weapon_OnTarget_Threshold + Allowable_Deviation)
+                                                                        && 
+                lameA > (lame_OnTarget_Threshold - Allowable_Deviation) && lameA < (lame_OnTarget_Threshold + Allowable_Deviation)) {
+      number = 2; // hitOnTargetB  
+      //digitalWrite(buzzerPin, HIGH);
+    } 
+  }
 }
 
 void handleEpeeHit() {
-  Serial.println("Inside: Handle EPEE Function");
+  //Serial.println("Inside: Handle EPEE Function");
   // Implement the specific behavior for a hit in Epee mode
   // read analog pins
     int16_t weaponA, lameA, groundA, adc3;
@@ -218,20 +206,22 @@ void handleEpeeHit() {
     weaponB = ads1115_B.readADC_SingleEnded(0);   // Read from channel 0 of the second ADS1115
     lameB = ads1115_B.readADC_SingleEnded(1);   // Read from channel 1 of the second ADS1115
     groundB = ads1115_B.readADC_SingleEnded(2);   // Read from channel 2 of the second ADS1115
-    Serial.print("Default ADS1115 (0x48) weaponA 0: "); Serial.println(weaponA);
-    Serial.print("Default ADS1115 (0x48) lameA 1: "); Serial.println(lameA);
-    Serial.print("Default ADS1115 (0x48) groundA 2: "); Serial.println(groundA);
+    // Serial.println(lockedOut);
+    // Serial.println(hitOnTargetA);
+    // Serial.println(hitOnTargetB);
+    // Serial.print("Default ADS1115 (0x48) weaponA 0: "); Serial.println(weaponA);
+    // Serial.print("Default ADS1115 (0x48) lameA 1: "); Serial.println(lameA);
+    // Serial.print("Default ADS1115 (0x48) groundA 2: "); Serial.println(groundA);
     
-    Serial.print("ADDR ADS1115 (0x49) weaponB 4: "); Serial.println(weaponB);
-    Serial.print("ADDR ADS1115 (0x49) lameB 5: "); Serial.println(lameB);
-    Serial.print("ADDR ADS1115 (0x49) groundB 6: "); Serial.println(groundB);
+    // Serial.print("ADDR ADS1115 (0x49) weaponB 4: "); Serial.println(weaponB);
+    // Serial.print("ADDR ADS1115 (0x49) lameB 5: "); Serial.println(lameB);
+    // Serial.print("ADDR ADS1115 (0x49) groundB 6: "); Serial.println(groundB);
     //_____Check for lockout___
     long now = micros();
     if ((hitOnTargetA && (epeeMode.lockoutTime < now)) 
                       ||
         (hitOnTargetB && (epeeMode.lockoutTime < now))) {
       lockedOut = true;
-      resetValues();
     }
 
     // weapon A
@@ -240,11 +230,7 @@ void handleEpeeHit() {
       if (weaponA > (Epee_Weapon_OnTarget_Threshold - Allowable_Deviation) && weaponA < (Epee_Weapon_OnTarget_Threshold + Allowable_Deviation)
                                                                       && 
               lameA > (Epee_Lame_OnTarget_Threshold - Allowable_Deviation) && lameA < (Epee_Lame_OnTarget_Threshold + Allowable_Deviation)) {
-                            hitOnTargetA = true;
-                            // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-                            fill_solid(pixels222, NUMPIXELS, CRGB::Green); // Moderately bright GREEN color.
-                            FastLED.show(); // This sends the updated pixel color to the hardware.
-                            digitalWrite(buzzerPin, HIGH);
+                            number = 1; // hitOnTargetA
     }
 
     // weapon B
@@ -253,18 +239,14 @@ void handleEpeeHit() {
       if (weaponB > (Epee_Weapon_OnTarget_Threshold - Allowable_Deviation) && weaponB < (Epee_Weapon_OnTarget_Threshold + Allowable_Deviation)
                                                                       && 
               lameB > (Epee_Lame_OnTarget_Threshold - Allowable_Deviation) && lameB < (Epee_Lame_OnTarget_Threshold + Allowable_Deviation)) {
-                            hitOnTargetB = true;
-                            // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-                            fill_solid(pixels, NUMPIXELS, CRGB::Red); // Moderately bright RED color.
-                            FastLED.show(); // This sends the updated pixel color to the hardware.
-                            digitalWrite(buzzerPin, HIGH);      
+          number = 2; // hitOnTargetB      
         }
       }
     }
 }
 
 void handleSabreHit() {
-  Serial.println("Inside: Handle Sabre Function");
+  //Serial.println("Inside: Handle Sabre Function");
   // Implement the specific behavior for a hit in Sabre mode
   // read analog pins
     int16_t weaponA, lameA, groundA, adc3;
@@ -276,67 +258,47 @@ void handleSabreHit() {
     weaponB = ads1115_B.readADC_SingleEnded(0);   // Read from channel 0 of the second ADS1115
     lameB = ads1115_B.readADC_SingleEnded(1);   // Read from channel 1 of the second ADS1115
     groundB = ads1115_B.readADC_SingleEnded(2);   // Read from channel 2 of the second ADS1115
-    Serial.print("Default ADS1115 (0x48) weaponA 0: "); Serial.println(weaponA);
-    Serial.print("Default ADS1115 (0x48) lameA 1: "); Serial.println(lameA);
-    Serial.print("Default ADS1115 (0x48) groundA 2: "); Serial.println(groundA);
+    // Serial.print("Default ADS1115 (0x48) weaponA 0: "); Serial.println(weaponA);
+    // Serial.print("Default ADS1115 (0x48) lameA 1: "); Serial.println(lameA);
+    // Serial.print("Default ADS1115 (0x48) groundA 2: "); Serial.println(groundA);
     
-    Serial.print("ADDR ADS1115 (0x49) weaponB 4: "); Serial.println(weaponB);
-    Serial.print("ADDR ADS1115 (0x49) lameB 5: "); Serial.println(lameB);
-    Serial.print("ADDR ADS1115 (0x49) groundB 6: "); Serial.println(groundB);
+    // Serial.print("ADDR ADS1115 (0x49) weaponB 4: "); Serial.println(weaponB);
+    // Serial.print("ADDR ADS1115 (0x49) lameB 5: "); Serial.println(lameB);
+    // Serial.print("ADDR ADS1115 (0x49) groundB 6: "); Serial.println(groundB);
     //_____Check for lockout___
     long now = micros();
-    if (((hitOnTargetA || hitOffTargetA) && (foilMode.lockoutTime < now)) 
-                                         ||
-        ((hitOnTargetB || hitOffTargetB) && (foilMode.lockoutTime < now))) {
-      lockedOut = true;
-      resetValues();
+  if (((hitOnTargetA || hitOffTargetA) && (sabreMode.lockoutTime < now)) 
+                                        ||
+      ((hitOnTargetB || hitOffTargetB) && (sabreMode.lockoutTime < now))) {
+    lockedOut = true;
   }
   // ___Weapon A___
   if (!hitOnTargetA && !hitOffTargetA) {
-      // Off target
-      if (weaponA > weapon_OffTarget_Threshold && lameB < lame_OffTarget_Threshold) {
-              hitOffTargetA = true;
-              // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-              fill_solid(pixels222, NUMPIXELS, CRGB::Yellow); // Yellow color.
-              FastLED.show(); // This sends the updated pixel color to the hardware.
-              digitalWrite(buzzerPin, HIGH);
-      // On target     
-      }
-      else if ((weaponA > (weapon_OnTarget_Threshold - Allowable_Deviation) && weaponA < (weapon_OnTarget_Threshold + Allowable_Deviation)) 
-                                                                          && 
-                  (lameB > (lame_OnTarget_Threshold - Allowable_Deviation) && lameB < (lame_OnTarget_Threshold + Allowable_Deviation))) {
-                  hitOnTargetA = true;
-                  // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-                  fill_solid(pixels222, NUMPIXELS, CRGB::Green); // Moderately bright GREEN color.
-                  FastLED.show(); // This sends the updated pixel color to the hardware.
-                  digitalWrite(buzzerPin, HIGH);
-      }
+    // Off target
+    if (weaponA > weapon_OffTarget_Threshold && lameB < lame_OffTarget_Threshold) {
+      number = 4; // hitOffTargetA
+    // On target     
     }
+    else if ((weaponA > (weapon_OnTarget_Threshold - Allowable_Deviation) && weaponA < (weapon_OnTarget_Threshold + Allowable_Deviation)) 
+                                                                        && 
+                (lameB > (lame_OnTarget_Threshold - Allowable_Deviation) && lameB < (lame_OnTarget_Threshold + Allowable_Deviation))) {
+        number = 1; // hitOnTargetA
+    }
+  }
   // ___Weapon B___
   if (!hitOnTargetB && !hitOffTargetB) {
-      // Off target
-      if (weaponB > weapon_OffTarget_Threshold && lameA < lame_OffTarget_Threshold) {
-          if (!depressedB) {
-              depressedB = true;
-          } else if (depressedB) {
-              hitOffTargetB = true;
-              // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-              fill_solid(pixels, NUMPIXELS, CRGB::Blue); // Bright Blue color.
-              FastLED.show(); // This sends the updated pixel color to the hardware.
-              digitalWrite(buzzerPin, HIGH);
-          }
-      // On target
-      } else if (weaponB > (weapon_OnTarget_Threshold - Allowable_Deviation) && weaponB < (weapon_OnTarget_Threshold + Allowable_Deviation)
-                                                                          && 
-                  lameA > (lame_OnTarget_Threshold - Allowable_Deviation) && lameA < (lame_OnTarget_Threshold + Allowable_Deviation)) {
-            hitOnTargetB = true;
-            // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-            fill_solid(pixels, NUMPIXELS, CRGB::Red); // Moderately bright RED color.
-            FastLED.show(); // This sends the updated pixel color to the hardware.
-            digitalWrite(buzzerPin, HIGH);
-      } 
+    // Off target
+    if (weaponB > weapon_OffTarget_Threshold && lameA < lame_OffTarget_Threshold) {
+      number = 3; // hitOffTargetB
     }
+    // On target
+    } else if (weaponB > (weapon_OnTarget_Threshold - Allowable_Deviation) && weaponB < (weapon_OnTarget_Threshold + Allowable_Deviation)
+                                                                        && 
+                lameA > (lame_OnTarget_Threshold - Allowable_Deviation) && lameA < (lame_OnTarget_Threshold + Allowable_Deviation)) {
+    number = 2; // hitOnTargetB  
+  } 
 }
+
 
 void handleHit() {
     currentMode->handleHit(); // will pint to a Mode instance in struct Mode
@@ -346,10 +308,25 @@ void handleHit() {
 void modeChange() { 
   buttonState = LOW;
   if (currentMode == &foilMode) {
+    //set an LED to show Mode
+    pixels[1] = CRGB::Black; // This will turn off the first LED
+    FastLED.show();
+    pixels[1] = CRGB(255, 0, 255);  // Purple is a mix of full red and blue with no green
+    FastLED.show();             // Display the newly-written colors
     currentMode = &epeeMode;
   } else if (currentMode == &epeeMode) {
+    //set an LED to show Mode
+    pixels[2] = CRGB::Black; // This will turn off the first LED
+    FastLED.show();
+    pixels[2] = CRGB(255, 0, 255);  // Purple is a mix of full red and blue with no green
+    FastLED.show();             // Display the newly-written colors
     currentMode = &sabreMode;
   } else {
+    //set an LED to show Mode
+    pixels[0] = CRGB::Black; // This will turn off the first LED
+    FastLED.show();
+    pixels[0] = CRGB(255, 0, 255);  // Purple is a mix of full red and blue with no green
+    FastLED.show();             // Display the newly-written colors
     currentMode = &foilMode;
   }
 }
@@ -405,6 +382,7 @@ void resetValues() {
   fill_solid(pixels, NUMPIXELS, CRGB::Black);
   fill_solid(pixels222, NUMPIXELS, CRGB::Black);
   FastLED.show();
+  number = 0;
   lockedOut    = false;
   hitOnTargetA  = false;
   hitOffTargetA = false;
@@ -414,14 +392,17 @@ void resetValues() {
 }
 void setup() {
   Serial.begin(BAUDRATE);
+  Wire.setClock(400000); // Increase I2C clock speed to 400kHz
   Serial.println("Score_box_V4_BetterModeChange");
   pinMode(MODE_BUTTON_PIN, INPUT_PULLDOWN);
   pinMode(buzzerPin, OUTPUT);
+  modeChange();
   //  Serial.println("Three Weapon Scoring Box");
   //  Serial.println("================");
   //=========
   //ADC SETUP
   //=========
+  
   ads1115_A.begin(0x48);    // Initialize the first ADS1115 at default address 0x48 (ADDR is a Floating Pin)
   ads1115_B.begin(0x49);       // Initialize the second ADS1115 at address 0x49 (ADDR connected to VDD aka power of ADC Pin)
 
@@ -448,6 +429,8 @@ void setup() {
   // ads.setGain(GAIN_FOUR);       // 4x gain   +/- 1.024V  1 bit = 0.5mV    0.03125mV
   // ads.setGain(GAIN_EIGHT);      // 8x gain   +/- 0.512V  1 bit = 0.25mV   0.015625mV
   // ads.setGain(GAIN_SIXTEEN);    // 16x gain  +/- 0.256V  1 bit = 0.125mV  0.0078125mV
+  ads1115_A.setDataRate(860);
+  ads1115_B.setDataRate(860);
   ads1115_A.setGain(GAIN_ONE);
   ads1115_B.setGain(GAIN_ONE);
   //FAST LED SETUP
@@ -478,14 +461,32 @@ void loop() {
 
   handleHit();
 
-
-
-  if (hitOffTargetB){
-    // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
+switch (number){
+case 1:
+    fill_solid(pixels222, NUMPIXELS, CRGB::Green); // Moderately bright GREEN color.
+    FastLED.show(); // This sends the updated pixel color to the hardware.
+    digitalWrite(buzzerPin, HIGH);
+    
+  break;
+case 2:
+    fill_solid(pixels, NUMPIXELS, CRGB::Red); // Moderately bright RED color.
+    FastLED.show(); // This sends the updated pixel color to the hardware.
+    digitalWrite(buzzerPin, HIGH);
+case 3:
+    fill_solid(pixels222, NUMPIXELS, CRGB::Yellow); // Yellow color.
+    FastLED.show(); // This sends the updated pixel color to the hardware.
+    digitalWrite(buzzerPin, HIGH);
+case 4:
     fill_solid(pixels, NUMPIXELS, CRGB::Blue); // Bright Blue color.
     FastLED.show(); // This sends the updated pixel color to the hardware.
     digitalWrite(buzzerPin, HIGH);
-    }
+  break;
+case 0:
+  break;
+default:
+  number = 0;
+  break;
+}
 
   
   // String serData = String("hitOnTargetA  : ") + hitOnTargetA  + "\n"
@@ -494,7 +495,8 @@ void loop() {
   //                       + "hitOnTargetB  : "  + hitOnTargetB  + "\n"
   //                       + "Locked Out  : "  + lockedOut   + "\n";
   // Serial.println(serData);
-  if (currentMode == &sabreMode && (hitOffTargetB || hitOffTargetA)){
+  //|| (currentMode == &sabreMode && (hitOffTargetB || hitOffTargetA))
+  if ((lockedOut == true) ){
     resetValues();
     }
 }
