@@ -51,7 +51,7 @@ namespace sequencer {
     };
 
     class TweenEach : public Sequencer {
-        std::vector<Tween::Timeline> timelines;
+        Vec<Tween::Timeline> timelines;
 
     public:
         virtual ~TweenEach() {}
