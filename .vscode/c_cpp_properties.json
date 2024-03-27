@@ -6,8 +6,7 @@
             "compilerPath": "C:/TDM-GCC-64/bin/g++.exe",
             "compilerArgs": [],
             "intelliSenseMode": "windows-gcc-x64",
-            "includePath": [
-            ],
+            "includePath": [],
             "forcedInclude": [],
             "cStandard": "c17",
             "cppStandard": "gnu++14",
