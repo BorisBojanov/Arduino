@@ -5,12 +5,13 @@
   So when you are Reading valaues you do a bit shift of 4 to get a 12 bit value from the 16 bit register.
   
 */
+#include <Arduino.h>
 #include <FastLED.h>
 #include <Wire.h>
 // #include <Adafruit_I2CDevice.h>
 #include "esp32-hal-cpu.h" // for setting CPU speed
 #include <Adafruit_ADS1X15.h>
-#include <Arduino.h>
+
 //TODO: set up debug levels correctly
 #define ADS_A 0x48 // ADDR Connected to GND
 #define ADS_B 0x49 // ADDR Connected to VCC
@@ -236,7 +237,7 @@ static uint32_t last_update = 0;
 // ADS Setup and Config
 //=======================
 void Foil_ADS_Configurator(){
-    // SET GAIN
+  // SET GAIN
   // SET SPS
   // SET COMPARATOR MODE (Window with HI and LO values, Ain0 - Ain3)
   const int HI = 15; // 1V Convert the voltage to a 16bit value
@@ -245,7 +246,7 @@ void Foil_ADS_Configurator(){
   const int LOOffTarget = 20000; // 3.28V Convert the voltage to a 15bit value 0.000125V per bit
   Wire.begin();
   Wire.setClock(400000); //Increase I2C clock speed to 400kHz
-//======================ADS_A================================
+  //======================ADS_A================================
   delay(10);
   //the following will disable the HI/LO Thresholds registers to use pin ## as the READY pin
   Wire.beginTransmission(ADS_A); // Start I2C Transmission to the ADS1015

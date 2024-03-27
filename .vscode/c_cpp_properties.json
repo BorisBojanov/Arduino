@@ -7,14 +7,6 @@
             "compilerArgs": [],
             "intelliSenseMode": "windows-gcc-x64",
             "includePath": [
-                "${workspaceFolder}/**",
-                "${workspaceFolder}/libraries/Adafruit_ADS1X15/**",
-                "${workspaceFolder}/libraries/FastLED/**",
-                "${workspaceFolder}/libraries/FastLED/src/**",
-                "C:\\Users\\boris\\OneDrive\\Documents\\Arduino\\libraries/**",
-                "C:\\Users\\boris\\OneDrive\\Documents\\Arduino\\libraries\\Adafruit_ADS1X15/**",
-                "C:\\Users\\boris\\OneDrive\\Documents\\Arduino\\libraries\\FastLED/**",
-                "C:\\Users\\boris\\Desktop\\Learning\\Coding\\C++_STUFF/**"
             ],
             "forcedInclude": [],
             "cStandard": "c17",
