@@ -115,11 +115,11 @@ namespace WebSocket
 
   } // namespace
 
-  void initialize()
+  void initialize(const String &hostname)
   {
     m_socket.begin();
     m_socket.onEvent(onEvent);
-    MDNS.begin("fastledhub");
+    MDNS.begin(hostname);
     MDNS.addService("http", "tcp", 80);
     MDNS.addService("ws", "tcp", 81);
   }
@@ -129,10 +129,15 @@ namespace WebSocket
     m_socket.loop();
   }
 
+  void broadcastMessage(String msg)
+  {
+    WebSocket::m_socket.broadcastTXT(msg.c_str());
+  }
+
   void broadcastStatus()
   {
     String msg = "{\"status\": " + String((int)FastLEDHub.getStatus()) + ", \"currentAnimation\": \"" + FastLEDHub.getCurrentAnimationName() + "\"}";
-    WebSocket::m_socket.broadcastTXT(msg.c_str());
+    broadcastMessage(msg);
   }
 
 } // namespace WebSocket
