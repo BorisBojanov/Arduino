@@ -8,7 +8,7 @@
 #include <Arduino.h>
 #include <FastLED.h>
 #include <Wire.h>
-// #include <Adafruit_I2CDevice.h>
+#include <Adafruit_I2CDevice.h>
 #include "esp32-hal-cpu.h" // for setting CPU speed
 #include <Adafruit_ADS1X15.h>
 
@@ -45,10 +45,10 @@ Bit 13:12 if Bit 14 is 0 then 00=A0 compared to A1. 01=A0 >A3, 10=A1>A3, 11=A2>A
 Bit 11:9  Programable Gain 000=6.144v, 001=4.096v, 010=2.048v, 011=1.024v, 100=0.512v, 101=0.256v
 bit 8     0=Continuous Conversion, 1=Power Down Single Shot
 */
-                    //bits:15,14,13:12,11:9,8
-const short MSBcfg             = 0b01000010; // config for single-ended Continous conversion for 4.096v Readings on A0               
+                //bits:15,14,13:12,11:9,8
+const short MSBcfg  = 0b01000010; // config for single-ended Continous conversion for 4.096v Readings on A0               
 //const short MSBcfg  = 0b01000010; // config for single-ended Continous conversion for 4.096v Readings on A0
-//const short MSBcfg2 = 0b01010010; // config for single-ended Continous conversion for 4.096v Readings on A1
+const short MSBcfg2 = 0b01010010; // config for single-ended Continous conversion for 4.096v Readings on A1
 //const short MSBcfg3 = 0b01100010; // config for single-ended Continous conversion for 4.096v Readings on A2
 //const short MSBcfg4 = 0b01110010; // config for single-ended Continous conversion for 4.096v Readings on A3
 
@@ -81,10 +81,10 @@ Bits 1:0  Number of conversions to complete before PIN is active, 00=1, 01=2, 10
                                    // 011       0                  0                          0                                  00
 //const short LSBcfg = 0b01100010; // 64x sps, Traditional Mode, Low when in active state, pulse the Pin after each conversion, 1 conversions
                                  // 000       1             0                           0                                 10
-  const short LSBcfg = 0b11110000;// 860x sps, Window mode, Low when in active state, pulse the Pin after each conversion, 4 conversions
+  const short LSBcfg  = 0b11110000;// 860x sps, Window mode, Low when in active state, pulse the Pin after each conversion, 4 conversions
                                  // goes ACTIVE after the fourth conversion, so we do 4 confirmations.
-
-
+  const short LSBcfg2 = 0b11111000;// 860x sps, Window mode, High when in active state, pulse the Pin after each conversion, 4 conversions
+ 
 /*=======================
 // GPIOs
 //=======================
@@ -117,12 +117,14 @@ UART_2_RX(GPIO 16) = Mode_Change_Button
 // Gpio 0 is always high at 4096
 // Gpio 35 is always high at 4096
 //============
-const uint8_t Mode_Button_PIN = 16;  // The pin where your mode button is connected
-const uint8_t buzzerPin = 17;         // buzzer pin
+const uint8_t Mode_Button_PIN = 5;  // The pin where your mode button is connected
+const uint8_t buzzerPin = 18;         // buzzer pin
 int WeaponA_ONTARGET_ALRT_PIN = 34; // ADS1015 Ready Pin good
 int WeaponB_ONTARGET_ALRT_PIN = 35; // ADS1015 Ready Pin 
-int WeaponA_OFFTARGET_ALRT_PIN = 5; // ADS1015 Ready Pin
-int WeaponB_OFFTARGET_ALRT_PIN = 18; // ADS1015 Ready Pin
+int WeaponA_OFFTARGET_ALRT_PIN = 16; // ADS1015 Ready Pin
+int WeaponB_OFFTARGET_ALRT_PIN = 17; // ADS1015 Ready Pin
+#define DATA_PIN  32   // input pin Neopixel is attached to
+#define DATA_PIN2 33  // input for the seconf Neopixel LED
 /*=======================
 // ADC Defines and info
 //=======================
@@ -156,8 +158,6 @@ int WeaponB_OFFTARGET_ALRT_PIN = 18; // ADS1015 Ready Pin
 // Fast LED Setup
 //=======================
 #define NUMPIXELS 64  // number of neopixels in strip
-#define DATA_PIN 32   // input pin Neopixel is attached to
-#define DATA_PIN2 33  // input for the seconf Neopixel LED
 #define CHIPSET WS2812B
 #define COLOR_ORDER GRB
 #define BRIGHTNESS 20
@@ -240,10 +240,19 @@ void Foil_ADS_Configurator(){
   // SET GAIN
   // SET SPS
   // SET COMPARATOR MODE (Window with HI and LO values, Ain0 - Ain3)
-  const int HI = 15; // 1V Convert the voltage to a 16bit value
-  const int LO = 0;  // 0V Convert the voltage to a 16bit value
-  const int HIOffTarget = 32760; // 4.095V Convert the voltage to a 15bit value 0.000125mVV per bit
-  const int LOOffTarget = 20000; // 3.28V Convert the voltage to a 15bit value 0.000125V per bit
+  const int HI = 13280; // 1.66V Convert the voltage to a 16bit value
+  const int LO = 12800;  // 1.60V Convert the voltage to a 16bit value
+  /*
+  3.3v
+  |  ALRT == T
+  3.0V
+  |  ALRT == F
+  1.30V
+  |  ALRT == T
+  0V
+  */
+  const int HIOffTarget = 32500; // 4.75V Convert the voltage to a 15bit value 0.000125mVV per bit
+  const int LOOffTarget = 24000; // 3.0V Convert the voltage to a 15bit value 0.000125V per bit
   Wire.begin();
   Wire.setClock(400000); //Increase I2C clock speed to 400kHz
   //======================ADS_A================================
@@ -285,7 +294,7 @@ void Foil_ADS_Configurator(){
   //This is sending the configuration to the ADS1015
   Wire.beginTransmission(ADS_A); // Start I2C Transmission to the ADS1015
   Wire.write(CfgReg); // write the register address to point to the configuration register
-  Wire.write(MSBcfgCOMPAR_A0_A1); // Write the MSB of the configuration register
+  Wire.write(MSBcfg); // Write the MSB of the configuration register
   Wire.write(LSBcfg); // Write the LSB of the configuration register
   error = Wire.endTransmission(); // End the I2C Transmission
   if (error > 0) {
@@ -331,7 +340,7 @@ void Foil_ADS_Configurator(){
   //This is sending the configuration to the ADS1015
   Wire.beginTransmission(ADS_B); // Start I2C Transmission to the ADS1015
   Wire.write(CfgReg); // write the register address to point to the configuration register
-  Wire.write(MSBcfgCOMPAR_A0_A1); // Write the MSB of the configuration register
+  Wire.write(MSBcfg); // Write the MSB of the configuration register
   Wire.write(LSBcfg); // Write the LSB of the configuration register
   error = Wire.endTransmission(); // End the I2C Transmission
   if (error > 0) {
@@ -432,21 +441,20 @@ void Foil_ADS_Configurator(){
   } else {
     Serial.println("Configuration Set for ADS_D");
   }
-
   
 }
 
 void Epee_ADS_Configurator(){
-    // SET GAIN
+  // SET GAIN
   // SET SPS
   // SET COMPARATOR MODE (Window with HI and LO values, Ain0 - Ain3)
-  const int HI = 15; // 1V Convert the voltage to a 16bit value
+  const int HI = 1000; // 1V Convert the voltage to a 16bit value
   const int LO = 0;  // 0V Convert the voltage to a 16bit value
   const int HIOffTarget = 32760; // 4.095V Convert the voltage to a 15bit value 0.000125mVV per bit
   const int LOOffTarget = 20000; // 3.28V Convert the voltage to a 15bit value 0.000125V per bit
   Wire.begin();
   Wire.setClock(400000); //Increase I2C clock speed to 400kHz
-//======================ADS_A================================
+  //======================ADS_A================================
   delay(10);
   //the following will disable the HI/LO Thresholds registers to use pin ## as the READY pin
   Wire.beginTransmission(ADS_A); // Start I2C Transmission to the ADS1015
@@ -637,13 +645,13 @@ void Epee_ADS_Configurator(){
 }
 
 void Sabre_ADS_Configurator(){
-    // SET GAIN
+  // SET GAIN
   // SET SPS
   // SET COMPARATOR MODE (Window with HI and LO values, Ain0 - Ain3)
-  const int HI = 100; // 1V Convert the voltage to a 16bit value
-  const int LO = 0;  // 0V Convert the voltage to a 16bit value
-  const int HIOffTarget = 32760; // 4.095V Convert the voltage to a 15bit value 0.000125mVV per bit
-  const int LOOffTarget = 20000; // 3.28V Convert the voltage to a 15bit value 0.000125V per bit
+  const int HI = 1000; // 1V Convert the voltage to a 16bit value
+  const int LO = 1;  // 0V Convert the voltage to a 16bit value
+  const int HIOffTarget = 32500; // 4.095V Convert the voltage to a 15bit value 0.000125mVV per bit
+  const int LOOffTarget = 20000; // 3.00V Convert the voltage to a 15bit value 0.000125V per bit
   Wire.begin();
   Wire.setClock(400000); //Increase I2C clock speed to 400kHz
 //======================ADS_A================================
@@ -835,6 +843,7 @@ void Sabre_ADS_Configurator(){
 
 
 }
+
 //==========================
 //Forward Declare The functions used by struct WeaponMode
 //==========================
@@ -922,17 +931,25 @@ void handleFoilHit() {
     //TimeResetWasCalled = millis();
     return;  // exit the function if we are locked out
   }
-
+  // This if Statement will make sure that you cannon get a light 
+  // just from touching the side of the blade on the lame in FOIL.
+  if ((OffTargetA_Flag && OnTargetA_Flag)||(OffTargetB_Flag && OnTargetB_Flag)){ 
+    OffTargetA_Flag = false;
+    OnTargetA_Flag = false;
+    OffTargetB_Flag = false;
+    OnTargetB_Flag = false;
+    return;
+  }
   // ___Weapon A___
   if (!Hit_On_Target_A && !Hit_Off_Target_A) {
     // Off target              
-    if ((OffTargetA_Flag)) { 
+    if ((OffTargetA_Flag && !OnTargetA_Flag)) { 
       Hit_Off_Target_A = true;                        // Hit_Off_Target_A
       TimeOfLockout = millis() + foilMode.lockoutTime;
       Hit_Time_A = now;  // Record the time of the hit
     }
     // On target
-    else if (OnTargetA_Flag) {  // Tested Value for lameB is 833
+    else if (OnTargetA_Flag && !OffTargetA_Flag) {  
       Hit_On_Target_A = true;                                                                                                  // Hit_On_Target_A
       TimeOfLockout = millis() + foilMode.lockoutTime;
       Hit_Time_A = now;  // Record the time of the hit
@@ -941,12 +958,12 @@ void handleFoilHit() {
   // ___Weapon B___
   if (!Hit_On_Target_B && !Hit_Off_Target_B) {
     // Off target
-    if ((OffTargetB_Flag)) {  
+    if ((OffTargetB_Flag && !OnTargetB_Flag)) {  
       Hit_Off_Target_B = true;                        
       TimeOfLockout = millis() + foilMode.lockoutTime;
       Hit_Time_B = now;  // Record the time of the hit
       // On target
-    } else if (OnTargetB_Flag) {  // Tested Value for lameA is 833
+    } else if (OnTargetB_Flag && !OffTargetB_Flag) {  // Tested Value for lameA is 833
       Hit_On_Target_B = true;                                                                                                    // Hit_On_Target_B
       TimeOfLockout = millis() + foilMode.lockoutTime;
       Hit_Time_B = now;  // Record the time of the hit
@@ -1030,7 +1047,7 @@ void handleSabreHit() {
   //_____Check for lockout___
   long now = millis();
   // Check for lockout
-  if (lockedOut || (Hit_On_Target_A && (now - Hit_Time_A) > sabreMode.lockoutTime) || (Hit_On_Target_B && (now - Hit_Time_B) > TimeOfLockout)) {
+  if (lockedOut || (Hit_On_Target_A && (now - Hit_Time_A) > sabreMode.lockoutTime) || (Hit_On_Target_B && (now - Hit_Time_B) > sabreMode.lockoutTime)) {
     lockedOut = true;
     return;
   }
@@ -1076,14 +1093,14 @@ void Mode_Change() {
   buttonState = LOW;
   if (currentMode == &foilMode) {
     //set an LED to show Mode
-
+    
     pixels[0] = CRGB::Black;
     pixels[1] = CRGB::Black;
     pixels[2] = CRGB::Black;
     HardReset();
     pixels[1] = CRGB(255, 0, 255);  // Purple is a mix of full red and blue with no green
-
     FastLED.show();  // Display the newly-written colors
+    Epee_ADS_Configurator();  // This will set the ADS1015 to the Epee Mode Configuration
     Serial.println("changed mode was called: to Epee");
     currentMode = &epeeMode;
   } else if (currentMode == &epeeMode) {
@@ -1094,6 +1111,7 @@ void Mode_Change() {
     HardReset();
     pixels[2] = CRGB(255, 0, 255);  // Purple is a mix of full red and blue with no green
     FastLED.show();                 // Display the newly-written colors
+    Sabre_ADS_Configurator();  // This will set the ADS1015 to the Sabre Mode Configuration
     Serial.println("changed mode was called: to Sabre");
     currentMode = &sabreMode;
   } else {
@@ -1104,6 +1122,7 @@ void Mode_Change() {
     HardReset();
     pixels[0] = CRGB(255, 0, 255);  // Purple is a mix of full red and blue with no green
     FastLED.show();                 // Display the newly-written colors
+    Foil_ADS_Configurator();  // This will set the ADS1015 to the Foil Mode Configuration
     Serial.println("changed mode was called: to Foil");
     currentMode = &foilMode;
   }
@@ -1250,7 +1269,7 @@ void loop() {
   //This loop should call one function that is a pointer to the mode that has been selected
   //This function should be called in a switch statement
   //A function that checks the if any interrupts have set a flag to Ture
-  //==========TESTING============
+  //============================TESTING=========================================
   // int16_t weaponA, lameA, groundA, weaponB, lameB, groundB;
   // weaponA = ads_OnTarget.readADC_SingleEnded(0);
   // lameA = ads_OnTarget.readADC_SingleEnded(1);
@@ -1271,8 +1290,8 @@ void loop() {
   // Serial.print("ads_OffTarget (0x49) Channel 5 - weaponB: "); Serial.println(weaponB);
   // Serial.print("ads_OffTarget (0x49) Channel 6 - lameA: "); Serial.println(lameA);
   // Serial.print("ads_OffTarget (0x49) Channel 7 - lameB: "); Serial.println(lameB);
+  //============================TESTING=========================================
 
-  //=============================
   if(Mode_ISR_StateChanged){
     if (BUTTON_Debounce(Mode_Button_PIN)) {
       Mode_Change();
@@ -1308,7 +1327,7 @@ void loop() {
         break;
       case OffTargetA_Flag_Value:
         // Serial.println("OFF TARGET A");
-        fill_solid(pixels222, NUMPIXELS, CRGB::Yellow);  // Yellow color.
+        fill_solid(pixels222, NUMPIXELS, CRGB::White);  // Yellow color.
         FastLED.show();                                  // This sends the updated pixel color to the hardware.
         digitalWrite(buzzerPin, HIGH);
         if (currentMode == &sabreMode) {
@@ -1319,7 +1338,7 @@ void loop() {
         break;
       case OffTargetB_Flag_Value:
         // Serial.println("OFF TARGET B");
-        fill_solid(pixels, NUMPIXELS, CRGB::Yellow);  // Bright Blue color.
+        fill_solid(pixels, NUMPIXELS, CRGB::White);  // Bright Blue color.
         FastLED.show();                               // This sends the updated pixel color to the hardware.
         digitalWrite(buzzerPin, HIGH);
         if (currentMode == &sabreMode) {
@@ -1338,35 +1357,35 @@ void loop() {
       case OnTargetA_Flag_Value + OffTargetB_Flag_Value:
         // Serial.println("ON TARGET A AND OFF TARGET B");
         fill_solid(pixels222, NUMPIXELS, CRGB::Green);  // Moderately bright GREEN color.
-        fill_solid(pixels, NUMPIXELS, CRGB::Yellow);    // Bright Blue color.
+        fill_solid(pixels, NUMPIXELS, CRGB::White);    // Bright Blue color.
         FastLED.show();                                 // This sends the updated pixel color to the hardware.
         digitalWrite(buzzerPin, HIGH);
         break;
       case OnTargetA_Flag_Value + OffTargetA_Flag_Value:
         // Serial.println("ON TARGET A AND OFF TARGET A");
         fill_solid(pixels222, NUMPIXELS, CRGB::Green);   // Moderately bright GREEN color.
-        fill_solid(pixels222, NUMPIXELS, CRGB::Yellow);  // Yellow color.
+        fill_solid(pixels222, NUMPIXELS, CRGB::White);  // Yellow color.
         FastLED.show();                                  // This sends the updated pixel color to the hardware.
         digitalWrite(buzzerPin, HIGH);
         break;
       case OnTargetB_Flag_Value + OffTargetA_Flag_Value:
         // Serial.println("ON TARGET B AND OFF TARGET A");
         fill_solid(pixels, NUMPIXELS, CRGB::Red);        // Moderately bright RED color.
-        fill_solid(pixels222, NUMPIXELS, CRGB::Yellow);  // Yellow color.
+        fill_solid(pixels222, NUMPIXELS, CRGB::White);  // Yellow color.
         FastLED.show();                                  // This sends the updated pixel color to the hardware.
         digitalWrite(buzzerPin, HIGH);
         break;
       case OnTargetB_Flag_Value + OffTargetB_Flag_Value:
         // Serial.println("ON TARGET B AND OFF TARGET B");
         fill_solid(pixels, NUMPIXELS, CRGB::Red);     // Moderately bright RED color.
-        fill_solid(pixels, NUMPIXELS, CRGB::Yellow);  // Bright Blue color.
+        fill_solid(pixels, NUMPIXELS, CRGB::White);  // Bright Blue color.
         FastLED.show();                               // This sends the updated pixel color to the hardware.
         digitalWrite(buzzerPin, HIGH);
         break;
       case OffTargetA_Flag_Value + OffTargetB_Flag_Value:
         // Serial.println("OFF TTARGET A AND OFF TARGET B");
-        fill_solid(pixels, NUMPIXELS, CRGB::Yellow);     // Bright Blue color.
-        fill_solid(pixels222, NUMPIXELS, CRGB::Yellow);  // Yellow color.
+        fill_solid(pixels, NUMPIXELS, CRGB::White);     // Bright Blue color.
+        fill_solid(pixels222, NUMPIXELS, CRGB::White);  // Yellow color.
         FastLED.show();                                  // This sends the updated pixel color to the hardware.
         digitalWrite(buzzerPin, HIGH);
         if (currentMode == &sabreMode) {
@@ -1381,52 +1400,62 @@ void loop() {
         break;
     }  // end of switch statement
   }
-  //Request Data
-  Wire.beginTransmission(ADS_A); // Start I2C Transmission to the ADS1115
-  Wire.write(ConvReg); //point to the convergen register to read conversion data
-  Wire.endTransmission(); // End the I2C Transmission
-  Wire.requestFrom(ADS_A, 2); // Request 2 bytes from the ADS1115 (MSB then the LSB)
-  /* Since the ADS1115 sends the MSB first we need to Read the first byte (MSB) and shift it 8 bits to the left
-  then we read the second byte (LSB) and add it to the first byte. This will give us the 16bit value of the conversion
-  */
-  RawValue_ADS_A = Wire.read() << 4 | Wire.read(); // Read the MSB and shift it 8 bits to the left, then read the LSB and add it to the MSB
-  
-  Wire.beginTransmission(ADS_B);
-  Wire.write(ConvReg);
-  Wire.endTransmission();
-  Wire.requestFrom(ADS_B, 2); //Request the LSB of the data from ADS_C
-  RawValue_ADS_B = Wire.read() << 4 | Wire.read(); // Read the MSB and shift it 8 bits to the left, then read the LSB and add it to the MSB
 
-  Wire.beginTransmission(ADS_C);
-  Wire.write(ConvReg);
-  Wire.endTransmission();
-  Wire.requestFrom(ADS_C, 2); //Request the LSB of the data from ADS_C
-  RawValue_ADS_C = Wire.read() << 4 | Wire.read(); // Read the MSB and shift it 8 bits to the left, then read the LSB and add it to the MSB
+  //============================TESTING=========================================
+  // //Request Data
+  // Wire.beginTransmission(ADS_A); // Start I2C Transmission to the ADS1115
+  // Wire.write(ConvReg); //point to the convergen register to read conversion data
+  // Wire.endTransmission(); // End the I2C Transmission
+  // Wire.requestFrom(ADS_A, 2); // Request 2 bytes from the ADS1115 (MSB then the LSB)
+  // /* Since the ADS1115 sends the MSB first we need to Read the first byte (MSB) and shift it 8 bits to the left
+  // then we read the second byte (LSB) and add it to the first byte. This will give us the 16bit value of the conversion
+  // */
+  // float RawValue_ADS_A = Wire.read() << 4 | Wire.read(); // Read the MSB and shift it 8 bits to the left, then read the LSB and add it to the MSB
+  // RawValue_ADS_A = RawValue_ADS_A * 0.002; // Convert the 11bit value to a voltage
 
-  Wire.beginTransmission(ADS_D);
-  Wire.write(ConvReg);
-  Wire.endTransmission();
-  Wire.requestFrom(ADS_D, 2); //Request the LSB of the data from ADS_C
-  RawValue_ADS_D = Wire.read() << 4 | Wire.read(); // Read the MSB and shift it 8 bits to the left, then read the LSB and add it to the MSB
-  Serial.print(0.00);
-  Serial.print(',');
-  Serial.print(3.30);
-  Serial.print(',');
-  Serial.print(RawValue_ADS_A * 0.002);
-  Serial.print(',');
-  Serial.print(RawValue_ADS_B * 0.002);
-  Serial.print(',');
-  Serial.print(RawValue_ADS_C * 0.002);
-  Serial.print(',');
-  Serial.println(RawValue_ADS_D * 0.002);
-  // String serData = String("RawValue_ADS_A  : ") + RawValue_ADS_A * 0.002  + "\n"
-  //                       + "RawValue_ADS_B  : "  + RawValue_ADS_B * 0.002  + "\n"
-  //                       + "RawValue_ADS_C  : "  + RawValue_ADS_C * 0.002  + "\n"
-  //                       + "RawValue_ADS_D  : "  + RawValue_ADS_D * 0.002  + "\n"
+  // Wire.beginTransmission(ADS_B);
+  // Wire.write(ConvReg);
+  // Wire.endTransmission();
+  // Wire.requestFrom(ADS_B, 2); //Request the LSB of the data from ADS_C
+  // float RawValue_ADS_B = Wire.read() << 4 | Wire.read(); // Read the MSB and shift it 8 bits to the left, then read the LSB and add it to the MSB
+  // RawValue_ADS_B = RawValue_ADS_B * 0.002; // Convert the 11bit value to a voltage
+
+  // Wire.beginTransmission(ADS_C);
+  // Wire.write(ConvReg);
+  // Wire.endTransmission();
+  // Wire.requestFrom(ADS_C, 2); //Request the LSB of the data from ADS_C
+  // float RawValue_ADS_C = Wire.read() << 4 | Wire.read(); // Read the MSB and shift it 8 bits to the left, then read the LSB and add it to the MSB
+  // RawValue_ADS_C = RawValue_ADS_C * 0.002; // Convert the 11bit value to a voltage
+
+  // Wire.beginTransmission(ADS_D);
+  // Wire.write(ConvReg);
+  // Wire.endTransmission();
+  // Wire.requestFrom(ADS_D, 2); //Request the LSB of the data from ADS_C
+  // float RawValue_ADS_D = Wire.read() << 4 | Wire.read(); // Read the MSB and shift it 8 bits to the left, then read the LSB and add it to the MSB
+  // RawValue_ADS_D = RawValue_ADS_D * 0.002; // Convert the 11bit value to a voltage
+
+
+  // if (OnTargetA_Flag||OnTargetB_Flag||OffTargetA_Flag||OffTargetB_Flag) {
+  // Serial.print(OnTargetA_Flag); Serial.print('|'); Serial.print(OnTargetB_Flag); Serial.print('|'); Serial.print(OffTargetA_Flag); Serial.print('|'); Serial.println(OffTargetB_Flag);
+  // Serial.print(',');
+  // Serial.print(RawValue_ADS_A);
+  // Serial.print(',');
+  // Serial.print(RawValue_ADS_B);
+  // Serial.print(',');
+  // Serial.print(RawValue_ADS_C);
+  // Serial.print(',');
+  // Serial.println(RawValue_ADS_D);
+  // }
+  // String serData = String("RawValue_ADS_A  : ") + RawValue_ADS_A  + "\n"
+  //                       + "RawValue_ADS_B  : "  + RawValue_ADS_B  + "\n"
+  //                       + "RawValue_ADS_C  : "  + RawValue_ADS_C  + "\n"
+  //                       + "RawValue_ADS_D  : "  + RawValue_ADS_D  + "\n"
   //                       + "Number          : "  + number  + "\n"
   //                       + "Locked Out      : "  + lockedOut   + "\n";
   // Serial.println(serData);
-  // Check if it's time to reset after LIGHTTIME has elapsed since the last hit
+  //============================TESTING=========================================
+
+  // // Check if it's time to reset after LIGHTTIME has elapsed since the last hit
   if (lockedOut && ((now - max(Hit_Time_A, Hit_Time_B) > LIGHTTIME) || (Hit_On_Target_A && now - Hit_Time_A > LIGHTTIME) || (Hit_On_Target_B && now - Hit_Time_B > LIGHTTIME))) {
     ResetValues();  // This will turn off LEDs and reset hit flags
     TimeResetWasCalled = millis();
