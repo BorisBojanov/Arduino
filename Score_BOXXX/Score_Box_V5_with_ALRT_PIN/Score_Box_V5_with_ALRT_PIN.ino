@@ -12,6 +12,7 @@
 #include "esp32-hal-cpu.h" // for setting CPU speed
 #include <Adafruit_ADS1X15.h>
 
+
 //TODO: set up debug levels correctly
 #define ADS_A 0x48 // ADDR Connected to GND
 #define ADS_B 0x49 // ADDR Connected to VCC
