@@ -2,24 +2,24 @@
 .DS_Store
 
 # VSCode
-.vscode/
+.vscode/*
 
 # Build directories
-build/
+build/*
 
 # Third-party directories
-AngryOxide/
+AngryOxide/*
 
 # Specific library file
 libraries/PCM/PCM.c
 .vscode/settings.json
 .vscode/c_cpp_properties.json
 .vscode/arduino.json
-libraries/FastLEDHub/
-libraries/FastLED/
-libraries/ArduinoJson/
-libraries/Adafruit_NeoPixel/
-libraries/Adafruit_DMA_neopixel_library/
-libraries/Adafruit_BusIO/
+libraries/FastLEDHub/*
+libraries/FastLED/*
+libraries/ArduinoJson/*
+libraries/Adafruit_NeoPixel/*
+libraries/Adafruit_DMA_neopixel_library/*
+libraries/Adafruit_BusIO/*
 
 
