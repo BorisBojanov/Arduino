@@ -1,5 +1,5 @@
 // ArduinoJson - https://arduinojson.org
-// Copyright © 2014-2024, Benoit BLANCHON
+// Copyright © 2014-2025, Benoit BLANCHON
 // MIT License
 
 #pragma once
@@ -15,32 +15,42 @@ class ElementProxy : public VariantRefBase<ElementProxy<TUpstream>>,
                      public VariantOperators<ElementProxy<TUpstream>> {
   friend class VariantAttorney;
 
+  friend class VariantRefBase<ElementProxy<TUpstream>>;
+
+  template <typename, typename>
+  friend class MemberProxy;
+
+  template <typename>
+  friend class ElementProxy;
+
  public:
   ElementProxy(TUpstream upstream, size_t index)
       : upstream_(upstream), index_(index) {}
 
-  ElementProxy(const ElementProxy& src)
-      : upstream_(src.upstream_), index_(src.index_) {}
-
-  FORCE_INLINE ElementProxy& operator=(const ElementProxy& src) {
+  ElementProxy& operator=(const ElementProxy& src) {
     this->set(src);
     return *this;
   }
 
   template <typename T>
-  FORCE_INLINE ElementProxy& operator=(const T& src) {
+  ElementProxy& operator=(const T& src) {
     this->set(src);
     return *this;
   }
 
   template <typename T>
-  FORCE_INLINE ElementProxy& operator=(T* src) {
+  ElementProxy& operator=(T* src) {
     this->set(src);
     return *this;
   }
 
  private:
-  FORCE_INLINE ResourceManager* getResourceManager() const {
+  // clang-format off
+  ElementProxy(const ElementProxy& src)  // Error here? See https://arduinojson.org/v7/proxy-non-copyable/
+      : upstream_(src.upstream_), index_(src.index_) {}
+  // clang-format on
+
+  ResourceManager* getResourceManager() const {
     return VariantAttorney::getResourceManager(upstream_);
   }
 
@@ -50,7 +60,7 @@ class ElementProxy : public VariantRefBase<ElementProxy<TUpstream>>,
         VariantAttorney::getResourceManager(upstream_));
   }
 
-  FORCE_INLINE VariantData* getOrCreateData() const {
+  VariantData* getOrCreateData() const {
     auto data = VariantAttorney::getOrCreateData(upstream_);
     if (!data)
       return nullptr;

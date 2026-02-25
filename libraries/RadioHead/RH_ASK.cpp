@@ -31,6 +31,8 @@
   #include "FspTimer.h"
   FspTimer ask_timer;
 
+#elif (RH_PLATFORM == RH_PLATFORM_ARDUINO) && defined(RH_CUBE_CELL_BOARD)
+    static TimerEvent_t timer;
 #endif
 
 
@@ -137,7 +139,7 @@ bool RH_ASK::init()
 // returns 0 & nticks = 0 on fault
 uint8_t RH_ASK::timerCalc(uint16_t speed, uint16_t max_ticks, uint16_t *nticks)
 {
-#if (RH_PLATFORM == RH_PLATFORM_ARDUINO && !defined(ARDUINO_ARCH_RP2040)) || (RH_PLATFORM == RH_PLATFORM_GENERIC_AVR8) || (RH_PLATFORM == RH_PLATFORM_ATTINY)
+#if (RH_PLATFORM == RH_PLATFORM_ARDUINO && !defined(ARDUINO_ARCH_RP2040) && !defined(RH_CUBE_CELL_BOARD)) || (RH_PLATFORM == RH_PLATFORM_GENERIC_AVR8) || (RH_PLATFORM == RH_PLATFORM_ATTINY)
     // Clock divider (prescaler) values - 0/3333: error flag
     uint8_t prescaler;     // index into array & return bit value
     unsigned long ulticks; // calculate by ntick overflow
@@ -353,6 +355,17 @@ void RH_ASK::timerSetup()
     // Enable Timer
     timer->CTRLA |= TCB_ENABLE_bm;
 
+#elif (RH_PLATFORM == RH_PLATFORM_ARDUINO) && defined(RH_CUBE_CELL_BOARD)
+    // Arduino CubeCell board 1.0.0 has non-standard timer support
+    // Forward declaration of the callback below
+    void timer_callback();
+    TimerInit(&timer, timer_callback);
+    // Sigh: This timer takes the timeout in milliseconds, not microseconds. That means the fastest bit rate
+    // we can support is 1000 / 8 = 125 bits per second.
+    uint32_t period = (1000 / 8) / _speed; // In milliseconds
+    TimerSetValue(&timer, period); // mseconds
+    TimerStart(&timer);
+    
 #elif (RH_PLATFORM == RH_PLATFORM_ARDUINO) // Arduino specific
 
 
@@ -560,10 +573,18 @@ void RH_ASK::timerSetup()
 //    timer0_write(ESP.getCycleCount() + 41660000);
 #elif (RH_PLATFORM == RH_PLATFORM_ESP32)
     void RH_INTERRUPT_ATTR esp32_timer_interrupt_handler(); // Forward declaration
+ #if ESP_ARDUINO_VERSION_MAJOR >= 3
+    // Sigh, this changed, apparently in version 3.
+    timer = timerBegin(_speed * 8);
+    timerAttachInterrupt(timer, &esp32_timer_interrupt_handler);
+    timerAlarm(timer, 1, true, 0);
+ #else
+    // Prior to version 3
     timer = timerBegin(0, 80, true); // Alarm value will be in in us
     timerAttachInterrupt(timer, &esp32_timer_interrupt_handler, true);
     timerAlarmWrite(timer, 1000000 / _speed / 8, true);
     timerAlarmEnable(timer);
+ #endif
 #endif
 
 }
@@ -828,6 +849,14 @@ void timer_callback(timer_callback_args_t __attribute((unused)) *p_args)
     thisASKDriver->handleTimerInterrupt();
 }
 
+#elif (RH_PLATFORM == RH_PLATFORM_ARDUINO) && defined(RH_CUBE_CELL_BOARD)
+// Cube cell interrupt
+void timer_callback(void)
+{
+    TimerStart(&timer);
+    thisASKDriver->handleTimerInterrupt();
+}
+
 #elif (RH_PLATFORM == RH_PLATFORM_ARDUINO) || (RH_PLATFORM == RH_PLATFORM_GENERIC_AVR8) || (RH_PLATFORM == RH_PLATFORM_ATTINY)
 // This is the interrupt service routine called when timer1 overflows
 // Its job is to output the next bit from the transmitter (every 8 calls)
@@ -887,7 +916,7 @@ void RH_INTERRUPT_ATTR esp8266_timer_interrupt_handler()
     thisASKDriver->handleTimerInterrupt();
 }
 #elif (RH_PLATFORM == RH_PLATFORM_ESP32)
-void IRAM_ATTR esp32_timer_interrupt_handler()
+void RH_INTERRUPT_ATTR esp32_timer_interrupt_handler()
 {
     thisASKDriver->handleTimerInterrupt();
 }

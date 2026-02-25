@@ -42,7 +42,7 @@ extern "C" {
 #include <esp_system.h>
 
 #if ESP_IDF_VERSION_MAJOR >= 4
-#if(ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(1, 0, 6))
+#if (ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(1, 0, 6))
 #include "sha/sha_parallel_engine.h"
 #else
 #include <esp32/sha.h>
@@ -328,7 +328,7 @@ void WebSockets::headerDone(WSclient_t * client) {
     client->status    = WSC_CONNECTED;
     client->cWsRXsize = 0;
     DEBUG_WEBSOCKETS("[WS][%d][headerDone] Header Handling Done.\n", client->num);
-#if(WEBSOCKETS_NETWORK_TYPE == NETWORK_ESP8266_ASYNC)
+#if (WEBSOCKETS_NETWORK_TYPE == NETWORK_ESP8266_ASYNC)
     client->cHttpLine = "";
     handleWebsocket(client);
 #endif
@@ -525,7 +525,7 @@ void WebSockets::handleWebsocketPayloadCb(WSclient_t * client, bool ok, uint8_t 
 
         // reset input
         client->cWsRXsize = 0;
-#if(WEBSOCKETS_NETWORK_TYPE == NETWORK_ESP8266_ASYNC)
+#if (WEBSOCKETS_NETWORK_TYPE == NETWORK_ESP8266_ASYNC)
         // register callback for next message
         handleWebsocketWaitFor(client, 2);
 #endif
@@ -571,6 +571,7 @@ String WebSockets::acceptKey(String & clientKey) {
  */
 String WebSockets::base64_encode(uint8_t * data, size_t length) {
     size_t size   = ((length * 1.6f) + 1);
+    size          = std::max(size, (size_t)5);    // minimum buffer size
     char * buffer = (char *)malloc(size);
     if(buffer) {
         base64_encodestate _state;
@@ -593,7 +594,7 @@ String WebSockets::base64_encode(uint8_t * data, size_t length) {
  * @return true if ok
  */
 bool WebSockets::readCb(WSclient_t * client, uint8_t * out, size_t n, WSreadWaitCb cb) {
-#if(WEBSOCKETS_NETWORK_TYPE == NETWORK_ESP8266_ASYNC)
+#if (WEBSOCKETS_NETWORK_TYPE == NETWORK_ESP8266_ASYNC)
     if(!client->tcp || !client->tcp->connected()) {
         return false;
     }
@@ -749,7 +750,7 @@ void WebSockets::handleHBTimeout(WSclient_t * client) {
                 client->pongTimeoutCount++;
                 client->lastPing = millis() - client->pingInterval - 500;    // force ping on the next run
 
-                DEBUG_WEBSOCKETS("[HBtimeout] pong TIMEOUT! lp=%d millis=%d pi=%d count=%d\n", client->lastPing, millis(), pi, client->pongTimeoutCount);
+                DEBUG_WEBSOCKETS("[HBtimeout] pong TIMEOUT! lp=%d millis=%lu pi=%d count=%d\n", client->lastPing, millis(), pi, client->pongTimeoutCount);
 
                 if(client->disconnectTimeoutCount && client->pongTimeoutCount >= client->disconnectTimeoutCount) {
                     DEBUG_WEBSOCKETS("[HBtimeout] count=%d, DISCONNECTING\n", client->pongTimeoutCount);

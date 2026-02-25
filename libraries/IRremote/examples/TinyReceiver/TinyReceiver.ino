@@ -67,7 +67,7 @@
  * Set compile options to modify the generated code.
  */
 //#define DISABLE_PARITY_CHECKS // Disable parity checks. Saves 48 bytes of program memory.
-//#define USE_CALLBACK_FOR_TINY_RECEIVER  // Call the fixed function "void handleReceivedTinyIRData()" each time a frame or repeat is received.
+//#define USE_CALLBACK_FOR_TINY_RECEIVER  // Call the user provided function "void handleReceivedTinyIRData()" each time a frame or repeat is received.
 
 #include "TinyIRReceiver.hpp" // include the code
 
@@ -81,9 +81,17 @@
 
 void setup() {
     Serial.begin(115200);
-#if defined(__AVR_ATmega32U4__) || defined(SERIAL_PORT_USBVIRTUAL) || defined(SERIAL_USB) /*stm32duino*/|| defined(USBCON) /*STM32_stm32*/|| defined(SERIALUSB_PID) || defined(ARDUINO_attiny3217)
-    delay(4000); // To be able to connect Serial monitor after reset or power up and before first print out. Do not wait for an attached Serial Monitor!
+
+#if defined(__AVR_ATmega32U4__) || defined(SERIAL_PORT_USBVIRTUAL) || defined(SERIAL_USB) /*stm32duino*/|| defined(USBCON) /*STM32_stm32*/ \
+    || defined(SERIALUSB_PID)  || defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_attiny3217)
+    // Wait until Serial Monitor is attached.
+    // Required for boards using USB code for Serial like Leonardo.
+    // Is void for USB Serial implementations using external chips e.g. a CH340.
+    while (!Serial)
+        ;
+    // !!! Program will not proceed if no Serial Monitor is attached !!!
 #endif
+
     // Just to know which program is running on my Arduino
 #if defined(ESP8266) || defined(ESP32)
     Serial.println();
@@ -102,14 +110,15 @@ void setup() {
 }
 
 void loop() {
-    if (TinyIRReceiverData.justWritten) {
-        TinyIRReceiverData.justWritten = false;
+    if (TinyReceiverDecode()) {
+
 #if !defined(USE_FAST_PROTOCOL)
         // We have no address at FAST protocol
         Serial.print(F("Address=0x"));
         Serial.print(TinyIRReceiverData.Address, HEX);
         Serial.print(' ');
 #endif
+
         Serial.print(F("Command=0x"));
         Serial.print(TinyIRReceiverData.Command, HEX);
         if (TinyIRReceiverData.Flags == IRDATA_FLAGS_IS_REPEAT) {
@@ -117,14 +126,20 @@ void loop() {
         }
         if (TinyIRReceiverData.Flags == IRDATA_FLAGS_PARITY_FAILED) {
             Serial.print(F(" Parity failed"));
+
 #if !defined(USE_EXTENDED_NEC_PROTOCOL) && !defined(USE_ONKYO_PROTOCOL)
             Serial.print(F(", try USE_EXTENDED_NEC_PROTOCOL or USE_ONKYO_PROTOCOL"));
 #endif
+
         }
         Serial.println();
     }
     /*
      * Put your code here
+     */
+
+    /*
+     * No resume() required :-)
      */
 }
 

@@ -1,5 +1,5 @@
 # ArduinoJson - https://arduinojson.org
-# Copyright © 2014-2024, Benoit BLANCHON
+# Copyright © 2014-2025, Benoit BLANCHON
 # MIT License
 
 cmake_minimum_required(VERSION 3.15)
@@ -10,11 +10,7 @@ if(ESP_PLATFORM)
 	return()
 endif()
 
-<<<<<<< Updated upstream
-project(ArduinoJson VERSION 7.0.1)
-=======
-project(ArduinoJson VERSION 7.0.4)
->>>>>>> Stashed changes
+project(ArduinoJson VERSION 7.4.2)
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 	include(CTest)

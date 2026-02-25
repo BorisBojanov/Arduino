@@ -1,8 +1,4 @@
-<<<<<<< Updated upstream
-version: 7.0.1.{build}
-=======
-version: 7.0.4.{build}
->>>>>>> Stashed changes
+version: 7.4.2.{build}
 environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022

@@ -1,4 +1,7 @@
 
+/.DS_Store
+.vscode/
+
 libraries/PCM/PCM.c
 .vscode/tasks.json
 AngryOxide/
