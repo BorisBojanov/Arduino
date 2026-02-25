@@ -9,7 +9,7 @@ build/*
 
 # Third-party directories
 AngryOxide/*
-ArduinoProjects/*
+
 
 # Specific library file
 libraries/PCM/PCM.c
