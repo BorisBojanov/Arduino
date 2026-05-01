@@ -60,8 +60,7 @@ void loop()
 }
 
 
-void play( char note, int beats)
-{
+void play( char note, int beats) {
   int numNotes = 14;  // number of notes in our note and frequency array (there are 15 values, but arrays start at 0)
 
   //Note: these notes are C major (there are no sharps or flats)
