@@ -27,13 +27,13 @@ long startTime = 0;                   //used to measure time that has passed for
 int roundNumber = 0;                        //keeps track of the roundNumber so that it can be displayed at the end of the game
 const int arraySize = 25;
 
-const char* words[arraySize] = {"moose", "beaver", "bear", "goose", "dog", "cat", "squirrel", "bird", "elephant", "horse",
-                                "bull", "giraffe", "seal", "bat", "skunk", "turtle", "whale", "rhino", "lion", "monkey",
-                                "frog", "alligator", "kangaroo", "hippo", "rabbit"
+const char* words[arraySize] = {"giraffe", "wallrus", "bear", "goose", "dog", "cat", "squirrel", "bird", "elephant", "horse",
+                                "octopus", "giraffe", "seal", "bat", "skunk", "turtle", "whale", "rhino", "lion", "monkey",
+                                "frog", "Donkey", "Loin-seal", "hippo", "hair"
                                };
 
 // the start value in the sequence array must have a value that could never be an index of an array
-// or at least a value outside the range of 0 to the size of the words array - 1; in this case, it can't be between 0 to 24
+// or at least a value outside the range of 0 to the size of the words array (- 1) in this case, it can't be between 0 to 24
 int sequence[] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}; //start with an array full of -1's
 
 void setup() {
